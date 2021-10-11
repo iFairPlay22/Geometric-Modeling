@@ -2,9 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Plane : MonoBehaviour
+public class Plane
 {
-    [SerializeField]
     // Vecteur normal au plan
     private Vector3 n;
 
@@ -14,14 +13,13 @@ public class Plane : MonoBehaviour
         private set { n = value; }
     }
 
-    [SerializeField]
     // Distance signée
     private float d;
 
     public float D
     {
         get { return d; }
-        private set { d = value; }
+        set { d = value; }
     }
 
     public Plane(Vector3 n, float d)
@@ -40,11 +38,5 @@ public class Plane : MonoBehaviour
     {
         this.n = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
         this.d = Vector3.Dot(p1, n);
-    }
-
-    private void Update()
-    {
-        transform.LookAt(n);
-        transform.position = n * d;
     }
 }
