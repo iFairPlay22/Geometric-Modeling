@@ -95,4 +95,10 @@ public class Intersection
 
         return true;
     }
+
+    public static bool InterSegCylinder(Segment segment, Cylinder cylinder, out Vector3 interP, out Vector3 vectN)
+    {
+        interP = new Vector3(); vectN = new Vector3();
+        return false;
+    }
 }
