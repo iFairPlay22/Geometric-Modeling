@@ -99,6 +99,15 @@ public class Intersection
     public static bool InterSegCylinder(Segment segment, Cylinder cylinder, out Vector3 interP, out Vector3 vectN)
     {
         interP = new Vector3(); vectN = new Vector3();
+
+        Vector3 ab = segment.P2 - segment.P1;
+        Vector3 pa = segment.P1 - cylinder.P1;
+        Vector3 pq = cylinder.P2 - cylinder.P1;
+
+        float a = 0;
+        float b = 0;
+        float c = 0;
+
         return false;
     }
 }
