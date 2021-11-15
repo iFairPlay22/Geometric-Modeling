@@ -11,13 +11,13 @@ public class Geometry : MonoBehaviour
     [SerializeField]
     private GameObject planeObject;
 
-    private Plane plane = new Plane(new Vector3(1, 0, 0), 1);
+    private Plane plane = new Plane(new Vector3(100, 100, 100), 10);
 
     #endregion Plane attributes
 
     #region Segment attributes
 
-    private Segment segment = new Segment(new Vector3(1, 1, 1), new Vector3(11, 10, 11));
+    private Segment segment = new Segment(new Vector3(-1, -1, -1), new Vector3(11, 11, 11));
 
     #endregion Segment attributes
 
@@ -32,7 +32,7 @@ public class Geometry : MonoBehaviour
     [SerializeField]
     private GameObject cylinderObject;
 
-    private Cylinder cylinder = new Cylinder(new Vector3(1, 0, 0), new Vector3(10, 5, 6), 3);
+    private Cylinder cylinder = new Cylinder(new Vector3(0, 0, 0), new Vector3(10, 10, 10), 5);
 
     #endregion Cylinder attributes
 

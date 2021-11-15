@@ -12,7 +12,6 @@ public class Cylinder
         private set { p1 = value; }
     }
 
-    // Vecteur normal au plan
     private Vector3 p2;
 
     public Vector3 P2
@@ -21,7 +20,6 @@ public class Cylinder
         private set { p2 = value; }
     }
 
-    // Distance signée
     private float r;
 
     public float R

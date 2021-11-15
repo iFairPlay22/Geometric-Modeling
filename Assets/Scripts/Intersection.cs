@@ -56,7 +56,7 @@ public class Intersection
         float a = Mathf.Pow(Vector3.Magnitude(ab), 2);
         float b = 2 * (Vector3.Dot(omegaA, ab));
         float c = Mathf.Pow(Vector3.Magnitude(omegaA), 2) - Mathf.Pow(sphere.R, 2);
-        float delta = Mathf.Pow(b, 2) - 4 * a * c;
+        float delta = b * b - 4 * a * c;
 
         if (delta < 0)
         {
@@ -98,16 +98,54 @@ public class Intersection
 
     public static bool InterSegCylinder(Segment segment, Cylinder cylinder, out Vector3 interP, out Vector3 vectN)
     {
-        interP = new Vector3(); vectN = new Vector3();
+        interP = new Vector3(); vectN = new Vector3(); 
 
         Vector3 ab = segment.P2 - segment.P1;
         Vector3 pa = segment.P1 - cylinder.P1;
         Vector3 pq = cylinder.P2 - cylinder.P1;
+        float r = cylinder.R;
 
-        float a = 0;
-        float b = 0;
-        float c = 0;
+        // On calcule delta
+        float a = Mathf.Pow(Vector3.Cross(pq, ab).magnitude, 2);
+        float b = 2 * Vector3.Dot(pa, ab) * Vector3.Dot(pq, pq) - 2 * Vector3.Dot(pa, pq) * Vector3.Dot(ab, pq);
+        float c = (Mathf.Pow(Vector3.Cross(pq, pa).magnitude, 2) - Mathf.Pow(r, 2)) * Vector3.Dot(pq, pq);
+        float delta = b * b - 4 * a * c;
+        
 
-        return false;
+        if (delta < 0)
+        {
+            // Pas de point d'intersection
+            return false;
+        }
+
+        // On calcule les valeurs t1 et t2
+        float t1 = (-b - Mathf.Sqrt(delta)) / (2 * a);
+        float t2 = (-b + Mathf.Sqrt(delta)) / (2 * a);
+
+        // On retourne les valeurs d'intersection
+        bool t1_01 = 0 <= t1 && t1 <= 1;
+        bool t2_01 = 0 <= t2 && t2 <= 1;
+        float t;
+
+        if (t1_01 && t2_01)
+        {
+            t = Mathf.Min(t1, t2);
+        } else if (t1_01)
+        {
+            t = t1;
+        }
+        else if (t2_01)
+        {
+            t = t2;
+        } else {
+            // S'ils ne sont pas sécants
+            return false;
+        }
+
+        // S'ils sont sécants
+        interP = segment.P1 + t * (segment.P2 - segment.P1);
+        vectN = segment.P1 - interP;
+        return true;
+        
     }
 }
