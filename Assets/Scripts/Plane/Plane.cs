@@ -10,7 +10,7 @@ public class Plane
     public Vector3 N
     {
         get { return n; }
-        private set { n = value; }
+        set { n = value; }
     }
 
     // Distance signée

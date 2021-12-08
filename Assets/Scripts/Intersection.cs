@@ -36,10 +36,10 @@ public class Intersection
         {
             // S'ils sont sécants
             interP = segment.P1 + t * (segment.P2 - segment.P1);
-            vectN = plane.N;
+            vectN = Vector3.Normalize(plane.N + interP);
             if (dot < 0)
             {
-                vectN *= -1;
+                vectN *= -1.0f;
             }
             return true;
         }
@@ -54,9 +54,9 @@ public class Intersection
 
         // On calcule delta
         float a = Mathf.Pow(Vector3.Magnitude(ab), 2);
-        float b = 2 * (Vector3.Dot(omegaA, ab));
+        float b = 2.0f * (Vector3.Dot(omegaA, ab));
         float c = Mathf.Pow(Vector3.Magnitude(omegaA), 2) - Mathf.Pow(sphere.R, 2);
-        float delta = b * b - 4 * a * c;
+        float delta = b * b - 4.0f * a * c;
 
         if (delta < 0)
         {
@@ -65,8 +65,8 @@ public class Intersection
         }
 
         // On calcule les valeurs t1 et t2
-        float t1 = (-b - Mathf.Sqrt(delta)) / (2 * a);
-        float t2 = (-b + Mathf.Sqrt(delta)) / (2 * a);
+        float t1 = (-b - Mathf.Sqrt(delta)) / (2.0f * a);
+        float t2 = (-b + Mathf.Sqrt(delta)) / (2.0f * a);
 
         // On retourne les valeurs d'intersection
         bool t1_01 = 0 <= t1 && t1 <= 1;
@@ -107,9 +107,9 @@ public class Intersection
 
         // On calcule delta
         float a = Mathf.Pow(Vector3.Cross(pq, ab).magnitude, 2);
-        float b = 2 * Vector3.Dot(pa, ab) * Vector3.Dot(pq, pq) - 2 * Vector3.Dot(pa, pq) * Vector3.Dot(ab, pq);
+        float b = 2.0f * Vector3.Dot(pa, ab) * Vector3.Dot(pq, pq) - 2.0f * Vector3.Dot(pa, pq) * Vector3.Dot(ab, pq);
         float c = (Mathf.Pow(Vector3.Cross(pq, pa).magnitude, 2) - Mathf.Pow(r, 2)) * Vector3.Dot(pq, pq);
-        float delta = b * b - 4 * a * c;
+        float delta = b * b - 4.0f * a * c;
         
 
         if (delta < 0)
@@ -119,8 +119,8 @@ public class Intersection
         }
 
         // On calcule les valeurs t1 et t2
-        float t1 = (-b - Mathf.Sqrt(delta)) / (2 * a);
-        float t2 = (-b + Mathf.Sqrt(delta)) / (2 * a);
+        float t1 = (-b - Mathf.Sqrt(delta)) / (2.0f * a);
+        float t2 = (-b + Mathf.Sqrt(delta)) / (2.0f * a);
 
         // On retourne les valeurs d'intersection
         bool t1_01 = 0 <= t1 && t1 <= 1;
@@ -143,8 +143,16 @@ public class Intersection
         }
 
         // S'ils sont sécants
-        interP = segment.P1 + t * (segment.P2 - segment.P1);
-        vectN = segment.P1 - interP;
+        interP = segment.P1 + t * ab;
+
+        // Calcul du projeté orthogonal du point d'intertion sur le vecteur directeur du cylindre
+        float X = pq.x;
+        float Y = pq.y;
+        float Z = pq.z;
+        float T = -((X * cylinder.P1.x - X * interP.x) + (Y * cylinder.P1.y - Y * interP.y) + (Z * cylinder.P1.z - Z * interP.z)) / (X * X + Y * Y + Z * Z);
+        Vector3 projOrth = new Vector3(T * X + cylinder.P1.x, T * Y + cylinder.P1.y, T * Z + cylinder.P1.z);
+        vectN = Vector3.Normalize(interP - projOrth);
+        
         return true;
         
     }

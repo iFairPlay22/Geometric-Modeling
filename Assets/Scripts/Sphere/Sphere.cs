@@ -9,7 +9,7 @@ public class Sphere
     public Vector3 P
     {
         get { return p; }
-        private set { p = value; }
+        set { p = value; }
     }
 
     private float r;

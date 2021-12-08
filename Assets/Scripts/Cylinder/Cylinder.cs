@@ -9,7 +9,7 @@ public class Cylinder
     public Vector3 P1
     {
         get { return p1; }
-        private set { p1 = value; }
+        set { p1 = value; }
     }
 
     private Vector3 p2;
