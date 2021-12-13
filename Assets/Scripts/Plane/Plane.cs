@@ -10,7 +10,7 @@ public class Plane
     public Vector3 N
     {
         get { return n; }
-        set { n = value; }
+        private set { n = value; }
     }
 
     // Distance signée
@@ -19,7 +19,7 @@ public class Plane
     public float D
     {
         get { return d; }
-        set { d = value; }
+        private set { d = value; }
     }
 
     public Plane(Vector3 n, float d)

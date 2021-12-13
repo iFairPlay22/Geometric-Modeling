@@ -6,6 +6,12 @@ public class Geometry : MonoBehaviour
 {
     #region Attributes
 
+    #region Segment attributes
+
+    private Segment segment = new Segment(new Vector3(0, 0, 0), new Vector3(35, 0, 0));
+
+    #endregion Segment attributes
+
     #region Plane attributes
 
     [SerializeField]
@@ -15,15 +21,9 @@ public class Geometry : MonoBehaviour
 
     #endregion Plane attributes
 
-    #region Segment attributes
-
-    private Segment segment = new Segment(new Vector3(0, 0, 0), new Vector3(20, 0, 20));
-
-    #endregion Segment attributes
-
     #region Sphere attributes
 
-    private Sphere sphere = new Sphere(new Vector3(12, 0, 10), 2.5f);
+    private Sphere sphere = new Sphere(new Vector3(15, 0, 0), 1.5f);
 
     #endregion Sphere attributes
 
@@ -32,7 +32,7 @@ public class Geometry : MonoBehaviour
     [SerializeField]
     private GameObject cylinderObject;
 
-    private Cylinder cylinder = new Cylinder(new Vector3(15, 0, 15), new Vector3(15, 5, 15), 2);
+    private Cylinder cylinder = new Cylinder(new Vector3(30, -2, 0), new Vector3(30, 5, 0), 1.5f);
 
     #endregion Cylinder attributes
 
@@ -40,42 +40,46 @@ public class Geometry : MonoBehaviour
 
     #region Printing
 
+    private Vector3 kVect = new Vector3(1, 1, 1);
     private void Update()
     {
+        #region Segment printing
+
+        // On bouge le segment
+        if (segment.P1.x < -10) kVect.x = 1;
+        else if (10 < segment.P1.x) kVect.x = -1;
+
+        if (segment.P1.y < -5) kVect.y = 1;
+        else if (5 < segment.P1.y) kVect.y = -1;
+        
+        if (segment.P1.z < -2) kVect.z = 1;
+        else if (2 < segment.P1.z) kVect.z = -1;
+
+        Vector3 moveV = kVect * Time.deltaTime;
+        segment.P1 += moveV;
+        segment.P2 += moveV;
+
+        #endregion
+
         #region Plane printing
 
-        // Update la position du plane
+        // Display plane
         if (planeObject != null)
         {
-            // Rotate pla,e
-            plane.N = (Quaternion.Euler(0, 15 * Time.deltaTime, 0) * plane.N).normalized;
-            
-            // Ddisplay plane
             planeObject.transform.LookAt(plane.N);
             planeObject.transform.position = plane.N * plane.D;
         }
 
         #endregion Plane printing
 
-        #region Sphere printing
-
-        // Update la position de la sphère
-        sphere.P = (Quaternion.Euler(50 * Time.deltaTime, 0, 0) * sphere.P);
-
-        #endregion Sphere printing
-
         #region Cylinder printing
 
-        // Update la position du cylindre
+        // Display cylinder
         if (cylinderObject != null)
         {
-            // Update la position de la sphère
-            cylinder.P1 = Quaternion.Euler(20 * Time.deltaTime, 0, 0) * cylinder.P1;
-
-            // Affichage de la sphère
             cylinderObject.transform.position = (cylinder.P2 + cylinder.P1) / 2.0f;
             cylinderObject.transform.rotation = Quaternion.FromToRotation(Vector3.up, (cylinder.P2 - cylinder.P1).normalized);
-            cylinderObject.transform.localScale = new Vector3(cylinder.R, Vector3.Distance(cylinder.P1, cylinder.P2) / 2, cylinder.R);
+            cylinderObject.transform.localScale = new Vector3(cylinder.R * 2, Vector3.Distance(cylinder.P1, cylinder.P2) / 2, cylinder.R * 2);
         }
 
         #endregion Cylinder printing
@@ -90,7 +94,7 @@ public class Geometry : MonoBehaviour
 
         #endregion Segment printing
 
-        #region Plane color printing
+        #region Plane printing
 
         // Intersections plan, segment
         if (planeObject != null)
@@ -126,15 +130,11 @@ public class Geometry : MonoBehaviour
 
         #endregion Sphere printing
 
-        #region Cylinder color printing
+        #region Cylinder printing
 
         // Intersections cylindre, segment
         if (cylinderObject != null)
         {
-            Gizmos.color = Color.green;
-            Gizmos.DrawSphere(cylinder.P1, 1f);
-            Gizmos.DrawSphere(cylinder.P2, 1f);
-
             Vector3 cylinderInterP, cylinderVectN;
             if (Intersection.InterSegCylinder(segment, cylinder, out cylinderInterP, out cylinderVectN))
             {
@@ -144,7 +144,6 @@ public class Geometry : MonoBehaviour
             {
                 cylinderObject.GetComponentInChildren<Renderer>().sharedMaterial.color = Color.blue;
             }
-                       
         }
 
         #endregion Cylinder color printing
@@ -153,7 +152,7 @@ public class Geometry : MonoBehaviour
     private void DrawIntersectionInfos(Vector3 cylinderInterP, Vector3 cylinderVectN)
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawSphere(cylinderInterP, 0.2f);
+        Gizmos.DrawSphere(cylinderInterP, 0.5f);
         Gizmos.DrawLine(cylinderInterP, cylinderInterP + cylinderVectN);
     }
 

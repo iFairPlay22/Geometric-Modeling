@@ -102,13 +102,17 @@ public class Intersection
 
         Vector3 ab = segment.P2 - segment.P1;
         Vector3 pa = segment.P1 - cylinder.P1;
-        Vector3 pq = cylinder.P2 - cylinder.P1;
+        Vector3 pq = (cylinder.P2 - cylinder.P1).normalized;
         float r = cylinder.R;
 
         // On calcule delta
-        float a = Mathf.Pow(Vector3.Cross(pq, ab).magnitude, 2);
-        float b = 2.0f * Vector3.Dot(pa, ab) * Vector3.Dot(pq, pq) - 2.0f * Vector3.Dot(pa, pq) * Vector3.Dot(ab, pq);
-        float c = (Mathf.Pow(Vector3.Cross(pq, pa).magnitude, 2) - Mathf.Pow(r, 2)) * Vector3.Dot(pq, pq);
+        float a = Vector3.Dot(ab, ab) - Mathf.Pow(Vector3.Dot(ab, pq), 2);
+        float b = 2 * (Vector3.Dot(pa, ab) - Vector3.Dot(ab, pq) * Vector3.Dot(pa, pq));
+        float c = Vector3.Dot(pa, pa) - Mathf.Pow(Vector3.Dot(pa, pq), 2) - Mathf.Pow(r, 2);
+
+        // float a = Mathf.Pow(Vector3.Cross(pq, ab).magnitude, 2);
+        // float b = 2.0f * Vector3.Dot(pa, ab) * Vector3.Dot(pq, pq) - 2.0f * Vector3.Dot(pa, pq) * Vector3.Dot(ab, pq);
+        // float c = (Mathf.Pow(Vector3.Cross(pq, pa).magnitude, 2) - Mathf.Pow(r, 2)) * Vector3.Dot(pq, pq);
         float delta = b * b - 4.0f * a * c;
         
 

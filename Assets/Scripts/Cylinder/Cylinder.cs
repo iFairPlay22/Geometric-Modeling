@@ -9,7 +9,7 @@ public class Cylinder
     public Vector3 P1
     {
         get { return p1; }
-        set { p1 = value; }
+        private set { p1 = value; }
     }
 
     private Vector3 p2;
@@ -25,7 +25,7 @@ public class Cylinder
     public float R
     {
         get { return r; }
-        set { r = value; }
+        private set { r = value; }
     }
 
     public Cylinder(Vector3 p1, Vector3 p2, float r)
