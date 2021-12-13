@@ -20,15 +20,25 @@ namespace Assets.Scripts.CustumForm
             // m_Mf.sharedMesh = CreateStrip(new Vector3(4, 0, 2), 8);
             // m_Mf.sharedMesh = CreatePlane(new Vector3(10, 0, 15), 3, 2);
 
-            m_Mf.sharedMesh = WrapNormalizePlaneQuads(3, 3, (kx, kz) => new Vector3(kx, 0, kz));
-            m_Mf.sharedMesh = new HalfEdgeMesh(m_Mf.sharedMesh).toVertexFace();
+            m_Mf.sharedMesh = CreateNormalizedPlaneQuads(3, 3, (kX, kZ) => {
+                float rho = 2; 
+                float theta = kX * 2.0f * Mathf.PI;
+                float phi = (1 - kZ) * Mathf.PI;
+                // Conversion sphérique => cartésien
+                return new Vector3(
+                    rho * Mathf.Cos(theta) * Mathf.Sin(phi),
+                    rho * Mathf.Cos(phi),
+                    rho * Mathf.Sin(theta) * Mathf.Sin(phi)
+                );
+            });
+            //m_Mf.sharedMesh = new HalfEdgeMesh(m_Mf.sharedMesh).toVertexFace();
 
-            Debug.Log(MeshDisplayInfo.ExportMeshCSV(m_Mf.sharedMesh));
+            // Debug.Log(MeshDisplayInfo.ExportMeshCSV(m_Mf.sharedMesh));
         }
 
-        #region Formes classiques
+        #region Formes de base
 
-        private Mesh CreateTriangle()
+        private Mesh CreateTriangleMesh()
         {
             Mesh newMesh = new Mesh();
             newMesh.name = "Triangle";
@@ -51,7 +61,7 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
-        private Mesh CreateQuad(Vector3 size)
+        private Mesh CreateQuadMesh(Vector3 size)
         {
             Mesh newMesh = new Mesh();
             newMesh.name = "Quad";
@@ -81,11 +91,11 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
-        #endregion Formes classiques
+        #endregion Formes de base
 
-        #region Triangles Strip
+        #region Bandes de triangles
 
-        private Mesh CreateStrip(Vector3 size, int nSegments)
+        private Mesh CreateStripXZTriangles(Vector3 size, int nSegments)
         {
             Mesh newMesh = new Mesh();
             newMesh.name = "Strip";
@@ -169,7 +179,7 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
-        private Mesh CreateNormalizePlane(int nSegmentsX, int nSegmentsZ, ComputePositionFromKxKz computePosition)
+        private Mesh CreateNormalizedPlane(int nSegmentsX, int nSegmentsZ, ComputePositionFromKxKz computePosition)
         {
             Mesh newMesh = new Mesh();
             newMesh.name = "Normalize plane";
@@ -212,6 +222,10 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
+        #endregion Bandes de triangles
+
+        #region Formes à partir de triangles
+
         private enum ShereTypes { QUARTER, DEMI, FULL };
 
         private Dictionary<ShereTypes, float> SphereTypesDict = new Dictionary<ShereTypes, float>(){
@@ -222,24 +236,24 @@ namespace Assets.Scripts.CustumForm
 
         private Mesh CreateSphere(int radius, ShereTypes sphereType, int nSegmentsX = 50, int nSegmentsZ = 50)
         {
-            return CreateNormalizePlane(nSegmentsX, nSegmentsZ, (kX, kZ) =>
-            {
-                float rho = radius; // 2 * 1 + 0.25f * Mathf.Sin(kZ * Mathf.PI * 2 * 4);
-                float theta = kX * SphereTypesDict[sphereType] * Mathf.PI;
-                float phi = (1 - kZ) * Mathf.PI;
-                // Conversion sphérique => cartésien
-                return new Vector3(
-                    rho * Mathf.Cos(theta) * Mathf.Sin(phi),
-                    rho * Mathf.Cos(phi),
-                    rho * Mathf.Sin(theta) * Mathf.Sin(phi)
-                );
-            }
+            return CreateNormalizedPlane(nSegmentsX, nSegmentsZ, (kX, kZ) =>
+                {
+                    float rho = radius; // 2 * 1 + 0.25f * Mathf.Sin(kZ * Mathf.PI * 2 * 4);
+                    float theta = kX * SphereTypesDict[sphereType] * Mathf.PI;
+                    float phi = (1 - kZ) * Mathf.PI;
+                    // Conversion sphérique => cartésien
+                    return new Vector3(
+                        rho * Mathf.Cos(theta) * Mathf.Sin(phi),
+                        rho * Mathf.Cos(phi),
+                        rho * Mathf.Sin(theta) * Mathf.Sin(phi)
+                    );
+                }
             );
         }
 
         private Mesh CreateRing(int radius, int height, int nSegmentsX = 50, int nSegmentsZ = 50)
         {
-            return CreateNormalizePlane(nSegmentsX, nSegmentsZ, (kX, kZ) =>
+            return CreateNormalizedPlane(nSegmentsX, nSegmentsZ, (kX, kZ) =>
             {
                 if (kX == 0)
                 {
@@ -264,7 +278,7 @@ namespace Assets.Scripts.CustumForm
 
         #endregion Triangles Strip
 
-        #region Vertex face
+        #region Bandes de carrés
 
         private Mesh CreateStripXZQuads(Vector3 size, int nSegments)
         {
@@ -302,7 +316,7 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
-        private Mesh WrapNormalizePlaneQuads(int nSegmentsX, int nSegmentsZ, ComputePositionFromKxKz computePosition)
+        private Mesh CreateNormalizedPlaneQuads(int nSegmentsX, int nSegmentsZ, ComputePositionFromKxKz computePosition)
         {
             Mesh newMesh = new Mesh();
             newMesh.name = "plane";
@@ -343,39 +357,6 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
-        /*
-         * Mesh CreateRegularPolygonXZQuads(float radius, int nQuads)
-        {
-            Mesh newMesh = new Mesh();
-            newMesh.name = "RegularPolygonQuads";
-
-            Vector3[] vertices = new Vector3[??];
-            int[] quads = new int[nQuads * 4];
-
-            vertices[0] = Vector3.zero;
-
-            //Vertices
-            for (int i = 0; i < ???; i++)
-            {
-            }
-
-            //Quads
-            int index = 0;
-            for (int i = 0; i < nQuads; i++)
-            {
-            quads[index++] =????;
-            quads[index++] =????;
-            quads[index++] =????;
-            quads[index++] =????;
-            }
-
-            newMesh.vertices = vertices;
-            newMesh.SetIndices(quads, MeshTopology.Quads, 0);
-            newMesh.RecalculateBounds();
-            newMesh.RecalculateNormals();
-            return newMesh;
-        }*/
-
-        #endregion Vertex face
+        #endregion Bandes de carrés
     }
 }
