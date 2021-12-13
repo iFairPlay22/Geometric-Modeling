@@ -7,11 +7,11 @@ using UnityEngine;
 
 public class HalfEdgeMesh
 {
-    private readonly Vector3[] vertices;
+    public readonly Vector3[] vertices;
 
-    private readonly List<HalfEdge> edges;
+    public readonly List<HalfEdge> edges;
 
-    private readonly List<Face> faces;
+    public readonly List<Face> faces;
 
     public HalfEdgeMesh(Vector3[] vertices, List<HalfEdge> edges, List<Face> faces)
     {
