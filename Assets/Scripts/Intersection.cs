@@ -109,12 +109,7 @@ public class Intersection
         float a = Vector3.Dot(ab, ab) - Mathf.Pow(Vector3.Dot(ab, pq), 2);
         float b = 2 * (Vector3.Dot(pa, ab) - Vector3.Dot(ab, pq) * Vector3.Dot(pa, pq));
         float c = Vector3.Dot(pa, pa) - Mathf.Pow(Vector3.Dot(pa, pq), 2) - Mathf.Pow(r, 2);
-
-        // float a = Mathf.Pow(Vector3.Cross(pq, ab).magnitude, 2);
-        // float b = 2.0f * Vector3.Dot(pa, ab) * Vector3.Dot(pq, pq) - 2.0f * Vector3.Dot(pa, pq) * Vector3.Dot(ab, pq);
-        // float c = (Mathf.Pow(Vector3.Cross(pq, pa).magnitude, 2) - Mathf.Pow(r, 2)) * Vector3.Dot(pq, pq);
         float delta = b * b - 4.0f * a * c;
-        
 
         if (delta < 0)
         {
