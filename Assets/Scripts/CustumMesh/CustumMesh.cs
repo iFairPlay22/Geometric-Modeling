@@ -11,6 +11,10 @@ namespace Assets.Scripts.CustumForm
 
         private delegate Vector3 ComputePositionFromKxKz(float kx, float kz);
 
+        private List<Vector3> facePoints;
+        private List<Vector3> edgePoints;
+        private List<Vector3> vertexPoints;
+
         private void Awake()
         {
             m_Mf = GetComponent<MeshFilter>();
@@ -20,21 +24,47 @@ namespace Assets.Scripts.CustumForm
             // m_Mf.sharedMesh = CreateStrip(new Vector3(4, 0, 2), 8);
             // m_Mf.sharedMesh = CreatePlane(new Vector3(10, 0, 15), 3, 2);
 
-            m_Mf.sharedMesh = CreateNormalizedPlaneQuads(3, 3, (kX, kZ) => {
-                float rho = 2; 
-                float theta = kX * 2.0f * Mathf.PI;
-                float phi = (1 - kZ) * Mathf.PI;
-                // Conversion sphérique => cartésien
-                return new Vector3(
-                    rho * Mathf.Cos(theta) * Mathf.Sin(phi),
-                    rho * Mathf.Cos(phi),
-                    rho * Mathf.Sin(theta) * Mathf.Sin(phi)
-                );
-            });
-            //m_Mf.sharedMesh = new HalfEdgeMesh(m_Mf.sharedMesh).toVertexFace();
+
+            m_Mf.sharedMesh = CreateCubeMesh();
+            HalfEdgeMesh halfEdgeMesh = new HalfEdgeMesh(m_Mf.sharedMesh);
+
+            // DEBUG
+            Dictionary<Face, Vector3> fp = CatmullClark.getFacePoints(halfEdgeMesh);
+            Dictionary<HalfEdge, Vector3> ep = CatmullClark.getEdgePoints(halfEdgeMesh, fp);
+            Dictionary<Vector3, Vector3> vp = CatmullClark.getVertexPoints(halfEdgeMesh, fp);
+            facePoints = new List<Vector3>(fp.Values);
+            edgePoints = new List<Vector3>(ep.Values);
+            vertexPoints = new List<Vector3>(vp.Values);
+            // FIN DEBUG
+
+            HalfEdgeMesh subdivedMesh = CatmullClark.subdiviseMesh(halfEdgeMesh);
+            Mesh newMesh = subdivedMesh.toVertexFace();
+            m_Mf.sharedMesh = newMesh;
+
+            Debug.Log("Old => " + halfEdgeMesh.GetInfos());
+            Debug.Log("New => " + subdivedMesh.GetInfos());
 
             // Debug.Log(MeshDisplayInfo.ExportMeshCSV(m_Mf.sharedMesh));
         }
+
+        private void OnDrawGizmos()
+        {
+            if (facePoints != null && edgePoints != null && vertexPoints != null)
+            {
+                drawPoints(Color.red, new List<Vector3>(facePoints));
+                drawPoints(Color.green, new List<Vector3>(edgePoints));
+                drawPoints(Color.blue, new List<Vector3>(vertexPoints));
+            }
+        }
+
+        private void drawPoints(Color c, List<Vector3> l)
+        {
+            Gizmos.color = c;
+            foreach (Vector3 pt in l)
+                Gizmos.DrawSphere(pt, 0.1f);
+        }
+
+
 
         #region Formes de base
 
@@ -85,6 +115,58 @@ namespace Assets.Scripts.CustumForm
 
             newMesh.triangles = triangles;
 
+            newMesh.RecalculateBounds();
+            newMesh.RecalculateNormals();
+
+            return newMesh;
+        }
+
+        private Mesh CreateCubeMesh()
+        {
+            Mesh newMesh = new Mesh();
+            newMesh.name = "Cube";
+            int i;
+
+            Vector3[] vertices = new Vector3[8];
+            i = 0;
+            vertices[i++] = new Vector3(0, 0, 0);
+            vertices[i++] = new Vector3(0, 0, 1);
+            vertices[i++] = new Vector3(1, 0, 1);
+            vertices[i++] = new Vector3(1, 0, 0);
+            vertices[i++] = new Vector3(0, 1, 0);
+            vertices[i++] = new Vector3(0, 1, 1);
+            vertices[i++] = new Vector3(1, 1, 1);
+            vertices[i++] = new Vector3(1, 1, 0);
+
+            int[] quads = new int[6 * 4];
+            i = 0;
+            quads[i++] = 3;
+            quads[i++] = 2;
+            quads[i++] = 1;
+            quads[i++] = 0;
+            quads[i++] = 7;
+            quads[i++] = 3;
+            quads[i++] = 0;
+            quads[i++] = 4;
+            quads[i++] = 4;
+            quads[i++] = 5;
+            quads[i++] = 6;
+            quads[i++] = 7;
+            quads[i++] = 5;
+            quads[i++] = 1;
+            quads[i++] = 2;
+            quads[i++] = 6;
+            quads[i++] = 7;
+            quads[i++] = 6;
+            quads[i++] = 2;
+            quads[i++] = 3;
+            quads[i++] = 0;
+            quads[i++] = 1;
+            quads[i++] = 5;
+            quads[i++] = 4;
+
+            newMesh.vertices = vertices;
+            newMesh.SetIndices(quads, MeshTopology.Quads, 0);
             newMesh.RecalculateBounds();
             newMesh.RecalculateNormals();
 

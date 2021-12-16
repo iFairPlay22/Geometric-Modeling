@@ -45,11 +45,13 @@ public class HalfEdgeMesh
             Vector3 p2 = this.vertices[i2];
             Vector3 p3 = this.vertices[i3];
 
-            Face f = new Face();
             HalfEdge he0 = new HalfEdge();
             HalfEdge he1 = new HalfEdge();
             HalfEdge he2 = new HalfEdge();
             HalfEdge he3 = new HalfEdge();
+
+            Face f = new Face();
+            f.halfEdge = he0;
 
             he0.sourceVertex = p0;
             he0.previousHalfEdge = he3;
@@ -65,11 +67,23 @@ public class HalfEdgeMesh
             he1.sourceVertex = p1;
             he1.previousHalfEdge = he0;
             he1.nextHalfEdge = he2;
+            Vector2 v21 = new Vector2(i2, i1);
+            if (map.ContainsKey(v21))
+            {
+                he1.twinHalfEdge = map[v21];
+                he1.twinHalfEdge.twinHalfEdge = he1;
+            }
             he1.face = f;
 
             he2.sourceVertex = p2;
             he2.previousHalfEdge = he1;
             he2.nextHalfEdge = he3;
+            Vector2 v32 = new Vector2(i3, i2);
+            if (map.ContainsKey(v32))
+            {
+                he2.twinHalfEdge = map[v32];
+                he2.twinHalfEdge.twinHalfEdge = he2;
+            }
             he2.face = f;
 
             he3.sourceVertex = p3;
@@ -90,22 +104,21 @@ public class HalfEdgeMesh
             this.edges.Add(he2);
             this.edges.Add(he3);
 
+            map.Add(new Vector3(i0, i1), he0);
             map.Add(new Vector3(i1, i2), he1);
             map.Add(new Vector3(i2, i3), he2);
+            map.Add(new Vector3(i3, i0), he3);
 
             this.faces.Add(f);
         }
 
-        // Debug
-        /*HalfEdge halfEdge = faces[4].halfEdge;
-        for (int i = 0; i < 4; i++)
-        {
-            if (halfEdge.twinHalfEdge != null && halfEdge.twinHalfEdge.sourceVertex != null)
-            {
-                Debug.Log(halfEdge.twinHalfEdge.sourceVertex);
-            }
-            halfEdge = halfEdge.nextHalfEdge;
-        }*/
+        // Afficher le nombre de edge sans twinEdge
+        //
+        // int nb = 0;
+        // for (int i = 0; i < edges.Count; i++)
+        //    if (edges[i].twinHalfEdge == null)
+        //        nb++;
+        // Debug.Log("edges[i].twinHalfEdge == null " + nb + " / " + edges.Count);
     }
 
     public Mesh toVertexFace()
@@ -135,5 +148,10 @@ public class HalfEdgeMesh
         newMesh.RecalculateNormals();
 
         return newMesh;
+    }
+
+    public string GetInfos()
+    {
+        return "Vertices : " + vertices.Length + ", Edges: " + edges.Count + ", Faces: " + faces.Count;
     }
 }
