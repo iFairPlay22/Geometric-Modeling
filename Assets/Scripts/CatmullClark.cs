@@ -7,6 +7,8 @@ class CatmullClark
 {
     public static HalfEdgeMesh subdiviseMesh(HalfEdgeMesh halfEdgeMesh)
     {
+        HalfEdgeMesh newHalfEdgeMesh;
+
         // Création de Face Points
         Dictionary<Face, Vector3> facePoints = getFacePoints(halfEdgeMesh);
 
@@ -17,10 +19,12 @@ class CatmullClark
         Dictionary<Vector3, Vector3> vertexPoints = getVertexPoints(halfEdgeMesh, facePoints);
 
         // Split des Edges
-        List<HalfEdge> newHalfEdges = getNewEdges(halfEdgeMesh, vertexPoints, edgePoints);
+        newHalfEdgeMesh = getMeshWithNewEdges(halfEdgeMesh, vertexPoints, edgePoints, facePoints);
 
         // Split des Faces
-        return getNewFaces(halfEdgeMesh, newHalfEdges, edgePoints, facePoints, vertexPoints);
+        newHalfEdgeMesh = getMeshWithNewFaces(newHalfEdgeMesh, facePoints);
+
+        return newHalfEdgeMesh;
     }
 
     public static Dictionary<Face, Vector3> getFacePoints(HalfEdgeMesh halfEdgeMesh)
@@ -53,7 +57,7 @@ class CatmullClark
         return d;
     }
 
-    public static Dictionary<HalfEdge, Vector3> getEdgePoints(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> allVerticesIsobarycenters)
+    public static Dictionary<HalfEdge, Vector3> getEdgePoints(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> facePoints)
     {
         // On récupère les moyennes des vertices et des isobarycentres des faces de mon mesh
         List<HalfEdge> edges = halfEdgeMesh.edges;
@@ -79,10 +83,10 @@ class CatmullClark
                 Vector3 vertex2 = edge2.sourceVertex;
 
                 Face face1 = edge1.face;
-                Vector3 face1Barycenter = allVerticesIsobarycenters[face1];
+                Vector3 face1Barycenter = facePoints[face1];
 
                 Face face2 = edge2.face;
-                Vector3 face2Barycenter = allVerticesIsobarycenters[face2];
+                Vector3 face2Barycenter = facePoints[face2];
 
 
                 d[edge1] = (vertex1 + vertex2 + face1Barycenter + face2Barycenter) / 4.0f;
@@ -140,158 +144,330 @@ class CatmullClark
         return d;
     }
 
-    public static List<HalfEdge> getNewEdges(HalfEdgeMesh halfEdgeMesh, Dictionary<Vector3, Vector3> vertexPoints, Dictionary<HalfEdge, Vector3> edgePoints)
+    public static HalfEdgeMesh getMeshWithNewEdges(HalfEdgeMesh halfEdgeMesh, Dictionary<Vector3, Vector3> vertexPoints, Dictionary<HalfEdge, Vector3> edgePoints, Dictionary<Face, Vector3> facePoints)
     {
         // On calcule les nouvelles positions des vertices
-        List<HalfEdge> edges = halfEdgeMesh.edges;
-        List<HalfEdge> newEdges = new List<HalfEdge>();
-
-        // On associe chaque vertices à la liste des edges dont il est l'origine
-        for (int i = 0; i < edges.Count; i++)
-        {
-            HalfEdge e = edges[i];
-
-            // Update de la position de la vertice initiale du segment
-            e.sourceVertex = vertexPoints[e.sourceVertex];
-
-            HalfEdge eP1 = edges[i].nextHalfEdge;
-
-            HalfEdge eN = new HalfEdge();
-            eN.sourceVertex = edgePoints[e];
-            eN.previousHalfEdge = e;
-            eN.nextHalfEdge = eP1;
-            eN.face = null;
-            eN.twinHalfEdge = null;
-
-            e.nextHalfEdge = eN;
-            eP1.previousHalfEdge = eN;
-
-            newEdges.Add(eN);
-        }
-
-        newEdges.AddRange(edges);
-        return newEdges;
-    }
-
-    public static HalfEdgeMesh getNewFaces(HalfEdgeMesh halfEdgeMesh, List<HalfEdge> edges, Dictionary<HalfEdge, Vector3> edgePoints, Dictionary<Face, Vector3> facePoints, Dictionary<Vector3, Vector3> vertexPoints)
-    {
-        List<Face> faces = halfEdgeMesh.faces;
-        List<Face> newFaces = new List<Face>();
-        List<HalfEdge> newEdges = edges;
-
-        for (int i = 0; i < faces.Count; i++)
-        {
-            Face face = faces[i];
-            HalfEdge e0 = face.halfEdge;
-            HalfEdge e1 = e0.nextHalfEdge;
-            HalfEdge e2 = e1.nextHalfEdge;
-            HalfEdge e3 = e2.nextHalfEdge;
-            HalfEdge e4 = e3.nextHalfEdge;
-            HalfEdge e5 = e4.nextHalfEdge;
-            HalfEdge e6 = e5.nextHalfEdge;
-            HalfEdge e7 = e6.nextHalfEdge;
-
-            HalfEdge e8 = new HalfEdge();
-            HalfEdge e8t = new HalfEdge();
-            HalfEdge e9 = new HalfEdge();
-            HalfEdge e9t = new HalfEdge();
-            HalfEdge e10 = new HalfEdge();
-            HalfEdge e10t = new HalfEdge();
-            HalfEdge e11 = new HalfEdge();
-            HalfEdge e11t = new HalfEdge();
-
-            e8.sourceVertex = e1.sourceVertex;
-            e8.previousHalfEdge = e0;
-            e8.nextHalfEdge = e11t;
-
-            e9.sourceVertex = e3.sourceVertex;
-            e9.previousHalfEdge = e2;
-            e9.nextHalfEdge = e8t;
-
-            e10.sourceVertex = e5.sourceVertex;
-            e10.previousHalfEdge = e4;
-            e10.nextHalfEdge = e9t;
-
-            e11.sourceVertex = e7.sourceVertex;
-            e11.previousHalfEdge = e6;
-            e11.nextHalfEdge = e10t;
-
-            e8t.sourceVertex = facePoints[e0.face];
-            e8t.previousHalfEdge = e11;
-            e8t.nextHalfEdge = e0.twinHalfEdge;
-
-            e9t.sourceVertex = facePoints[e0.face];
-            e9t.previousHalfEdge = e8;
-            e9t.nextHalfEdge = e2.twinHalfEdge;
-
-            e10t.sourceVertex = facePoints[e0.face];
-            e10t.previousHalfEdge = e9;
-            e10t.nextHalfEdge = e4.twinHalfEdge;
-
-            e11t.sourceVertex = facePoints[e0.face];
-            e11t.previousHalfEdge = e10;
-            e11t.nextHalfEdge = e6.twinHalfEdge;
-
-            Face f0 = new Face();
-            f0.halfEdge = e0;
-            newFaces.Add(f0);
-
-            Face f1 = new Face();
-            f1.halfEdge = e1;
-            newFaces.Add(f1);
-
-            Face f2 = new Face();
-            f2.halfEdge = e3;
-            newFaces.Add(f2);
-
-            Face f3 = new Face();
-            f3.halfEdge = e5;
-            newFaces.Add(f3);
-
-            e7.face = f0;
-            e0.face = f0;
-            e8.face = f0;
-            e11t.face = f0;
-
-            e1.face = f1;
-            e2.face = f1;
-            e9.face = f1;
-            e8t.face = f1;
-
-            e3.face = f2;
-            e4.face = f2;
-            e10.face = f2;
-            e9t.face = f2;
-
-            e5.face = f3;
-            e6.face = f3;
-            e11.face = f3;
-            e10t.face = f3;
-
-            newEdges.Add(e0);
-            newEdges.Add(e1);
-            newEdges.Add(e2);
-            newEdges.Add(e3);
-            newEdges.Add(e4);
-            newEdges.Add(e5);
-            newEdges.Add(e6);
-            newEdges.Add(e7);
-            newEdges.Add(e8);
-            newEdges.Add(e9);
-            newEdges.Add(e10);
-            newEdges.Add(e11);
-            newEdges.Add(e8t);
-            newEdges.Add(e9t);
-            newEdges.Add(e10t);
-            newEdges.Add(e11t);
-        }
-
-        // Ajout des vertices
         List<Vector3> newVertices = new List<Vector3>();
-        newVertices.AddRange(new List<Vector3>(vertexPoints.Values));
-        newVertices.AddRange(new List<Vector3>(facePoints.Values));
-        newVertices.AddRange(new List<Vector3>(edgePoints.Values));
+        List<HalfEdge> newEdges = new List<HalfEdge>();
+        List<Face> newFaces = new List<Face>();
+
+        // On associe chaque couple de vertices à un edge qu'il délimite
+        PointsCouple p;
+        Dictionary<PointsCouple, HalfEdge> verticesToHalfEdge = new Dictionary<PointsCouple, HalfEdge>();
+        
+        for (int i = 0; i < halfEdgeMesh.faces.Count; i++)
+        {
+            // Récupération des objets
+            Face currentF = halfEdgeMesh.faces[i];
+            HalfEdge currentE1 = currentF.halfEdge;
+            HalfEdge currentE2 = currentE1.nextHalfEdge;
+            HalfEdge currentE3 = currentE2.nextHalfEdge;
+            HalfEdge currentE4 = currentE3.nextHalfEdge;
+
+            // Création des objets
+            Face newF = new Face();
+            HalfEdge newE1 = new HalfEdge();
+            HalfEdge newE2 = new HalfEdge();
+            HalfEdge newE3 = new HalfEdge();
+            HalfEdge newE4 = new HalfEdge();
+            HalfEdge newE1f = new HalfEdge();
+            HalfEdge newE2f = new HalfEdge();
+            HalfEdge newE3f = new HalfEdge();
+            HalfEdge newE4f = new HalfEdge();
+
+            newF.halfEdge = newE1;
+
+            newE1.sourceVertex = vertexPoints[currentE1.sourceVertex];
+            newE1.twinHalfEdge = null;
+            newE1.previousHalfEdge = newE4f;
+            newE1.nextHalfEdge = newE1f;
+            newE1.face = newF;
+
+            newE2.sourceVertex = vertexPoints[currentE2.sourceVertex];
+            newE2.twinHalfEdge = null;
+            newE2.previousHalfEdge = newE1f;
+            newE2.nextHalfEdge = newE2f;
+            newE2.face = newF;
+
+            newE3.sourceVertex = vertexPoints[currentE3.sourceVertex];
+            newE3.twinHalfEdge = null;
+            newE3.previousHalfEdge = newE2f;
+            newE3.nextHalfEdge = newE3f;
+            newE3.face = newF;
+
+            newE4.sourceVertex = vertexPoints[currentE4.sourceVertex];
+            newE4.twinHalfEdge = null;
+            newE4.previousHalfEdge = newE3f;
+            newE4.nextHalfEdge = newE4f;
+            newE4.face = newF;
+
+            newE1f.sourceVertex = edgePoints[currentE1];
+            newE1f.twinHalfEdge = null;
+            newE1f.previousHalfEdge = newE1;
+            newE1f.nextHalfEdge = newE2;
+            newE1f.face = newF;
+
+            newE2f.sourceVertex = edgePoints[currentE2];
+            newE2f.twinHalfEdge = null;
+            newE2f.previousHalfEdge = newE2;
+            newE2f.nextHalfEdge = newE3;
+            newE2f.face = newF;
+
+            newE3f.sourceVertex = edgePoints[currentE3];
+            newE3f.twinHalfEdge = null;
+            newE3f.previousHalfEdge = newE3;
+            newE3f.nextHalfEdge = newE4;
+            newE3f.face = newF;
+
+            newE4f.sourceVertex = edgePoints[currentE4];
+            newE4f.twinHalfEdge = null;
+            newE4f.previousHalfEdge = newE4;
+            newE4f.nextHalfEdge = newE1;
+            newE4.face = newF;
+
+            // Twin
+            p = new PointsCouple(newE1.nextHalfEdge.sourceVertex, newE1.sourceVertex);
+            if (verticesToHalfEdge.ContainsKey(p))
+            {
+                newE1.twinHalfEdge = verticesToHalfEdge[p];
+                verticesToHalfEdge[p].twinHalfEdge = newE1;
+            }
+
+            p = new PointsCouple(newE2.nextHalfEdge.sourceVertex, newE2.sourceVertex);
+            if (verticesToHalfEdge.ContainsKey(p))
+            {
+                newE2.twinHalfEdge = verticesToHalfEdge[p];
+                verticesToHalfEdge[p].twinHalfEdge = newE2;
+            }
+
+            p = new PointsCouple(newE3.nextHalfEdge.sourceVertex, newE3.sourceVertex);
+            if (verticesToHalfEdge.ContainsKey(p))
+            {
+                newE3.twinHalfEdge = verticesToHalfEdge[p];
+                verticesToHalfEdge[p].twinHalfEdge = newE3;
+            }
+
+            p = new PointsCouple(newE4.nextHalfEdge.sourceVertex, newE4.sourceVertex);
+            if (verticesToHalfEdge.ContainsKey(p))
+            {
+                newE4.twinHalfEdge = verticesToHalfEdge[p];
+                verticesToHalfEdge[p].twinHalfEdge = newE4;
+            }
+
+            p = new PointsCouple(newE1f.nextHalfEdge.sourceVertex, newE1f.sourceVertex);
+            if (verticesToHalfEdge.ContainsKey(p))
+            {
+                newE1f.twinHalfEdge = verticesToHalfEdge[p];
+                verticesToHalfEdge[p].twinHalfEdge = newE1f;
+            }
+
+            p = new PointsCouple(newE2f.nextHalfEdge.sourceVertex, newE2f.sourceVertex);
+            if (verticesToHalfEdge.ContainsKey(p))
+            {
+                newE2f.twinHalfEdge = verticesToHalfEdge[p];
+                verticesToHalfEdge[p].twinHalfEdge = newE2f;
+            }
+
+            p = new PointsCouple(newE3f.nextHalfEdge.sourceVertex, newE3f.sourceVertex);
+            if (verticesToHalfEdge.ContainsKey(p))
+            {
+                newE3f.twinHalfEdge = verticesToHalfEdge[p];
+                verticesToHalfEdge[p].twinHalfEdge = newE3f;
+            }
+
+            p = new PointsCouple(newE4f.nextHalfEdge.sourceVertex, newE4f.sourceVertex);
+            if (verticesToHalfEdge.ContainsKey(p))
+            {
+                newE4f.twinHalfEdge = verticesToHalfEdge[p];
+                verticesToHalfEdge[p].twinHalfEdge = newE4f;
+            }
+
+            // On ajoute les edges correspondant au couple de points
+            verticesToHalfEdge[new PointsCouple(newE1.sourceVertex, newE1.nextHalfEdge.sourceVertex)] = newE1;
+            verticesToHalfEdge[new PointsCouple(newE2.sourceVertex, newE2.nextHalfEdge.sourceVertex)] = newE2;
+            verticesToHalfEdge[new PointsCouple(newE3.sourceVertex, newE3.nextHalfEdge.sourceVertex)] = newE3;
+            verticesToHalfEdge[new PointsCouple(newE4.sourceVertex, newE4.nextHalfEdge.sourceVertex)] = newE4;
+            verticesToHalfEdge[new PointsCouple(newE1f.sourceVertex, newE1f.nextHalfEdge.sourceVertex)] = newE1f;
+            verticesToHalfEdge[new PointsCouple(newE2f.sourceVertex, newE2f.nextHalfEdge.sourceVertex)] = newE2f;
+            verticesToHalfEdge[new PointsCouple(newE3f.sourceVertex, newE3f.nextHalfEdge.sourceVertex)] = newE3f;
+            verticesToHalfEdge[new PointsCouple(newE4f.sourceVertex, newE4f.nextHalfEdge.sourceVertex)] = newE4f;
+
+            facePoints[newF] = facePoints[currentF];
+
+            // Ajout des objets
+            newVertices.Add(newE1.sourceVertex);
+            newVertices.Add(newE2.sourceVertex);
+            newVertices.Add(newE3.sourceVertex);
+            newVertices.Add(newE4.sourceVertex);
+            newVertices.Add(newE1f.sourceVertex);
+            newVertices.Add(newE2f.sourceVertex);
+            newVertices.Add(newE3f.sourceVertex);
+            newVertices.Add(newE4f.sourceVertex);
+            newEdges.Add(newE1);
+            newEdges.Add(newE2);
+            newEdges.Add(newE3);
+            newEdges.Add(newE4);
+            newEdges.Add(newE1f);
+            newEdges.Add(newE2f);
+            newEdges.Add(newE3f);
+            newEdges.Add(newE4f);
+            newFaces.Add(newF);
+        }
+
+        // int ko = 0, ok = 0; 
+        // for (int i = 0; i < newEdges.Count; i++)
+        //     if (newEdges[i].nextHalfEdge == null)
+        //         ko++;
+        //     else
+        //         ok++;
+        // Debug.Log("KO : " + ko + " / " + (ko + ok));
 
         return new HalfEdgeMesh(newVertices.ToArray(), newEdges, newFaces);
+    }
+
+    public static HalfEdgeMesh getMeshWithNewFaces(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> facePoints)
+    {
+        List<HalfEdge> newEdges = halfEdgeMesh.edges;
+        List<Face> newFaces = new List<Face>();
+        List<Vector3> newVertices = new List<Vector3>(halfEdgeMesh.vertices);
+
+        for (int i = 0; i < halfEdgeMesh.faces.Count; i++)
+        {
+            // Récupération des éléments
+            Face currentF = halfEdgeMesh.faces[i];
+
+            HalfEdge currentE0 = currentF.halfEdge;
+            HalfEdge currentE1 = currentE0.nextHalfEdge;
+            HalfEdge currentE2 = currentE1.nextHalfEdge;
+            HalfEdge currentE3 = currentE2.nextHalfEdge;
+            HalfEdge currentE4 = currentE3.nextHalfEdge;
+            HalfEdge currentE5 = currentE4.nextHalfEdge;
+            HalfEdge currentE6 = currentE5.nextHalfEdge;
+            HalfEdge currentE7 = currentE6.nextHalfEdge;
+
+            // Création des éléments
+            Face newF1 = new Face();
+            Face newF2 = new Face();
+            Face newF3 = new Face();
+            Face newF4 = new Face();
+
+            HalfEdge newE8 = new HalfEdge();
+            HalfEdge newE8t = new HalfEdge();
+            HalfEdge newE9 = new HalfEdge();
+            HalfEdge newE9t = new HalfEdge();
+            HalfEdge newE10 = new HalfEdge();
+            HalfEdge newE10t = new HalfEdge();
+            HalfEdge newE11 = new HalfEdge();
+            HalfEdge newE11t = new HalfEdge();
+
+            newF1.halfEdge = currentE0;
+            newF2.halfEdge = currentE2;
+            newF3.halfEdge = currentE4;
+            newF4.halfEdge = currentE6;
+
+            newE8.sourceVertex = currentE1.sourceVertex;
+            newE8.previousHalfEdge = currentE0;
+            newE8.nextHalfEdge = newE11t;
+            newE8.face = newF1;
+            newE8.twinHalfEdge = null;
+
+            newE9.sourceVertex = currentE3.sourceVertex;
+            newE9.previousHalfEdge = currentE2;
+            newE9.nextHalfEdge = newE8t;
+            newE9.face = newF2;
+            newE9.twinHalfEdge = null;
+
+            newE10.sourceVertex = currentE5.sourceVertex;
+            newE10.previousHalfEdge = currentE4;
+            newE10.nextHalfEdge = newE9t;
+            newE10.face = newF3;
+            newE10.twinHalfEdge = null;
+
+            newE11.sourceVertex = currentE7.sourceVertex;
+            newE11.previousHalfEdge = currentE6;
+            newE11.nextHalfEdge = newE10t;
+            newE11.face = newF4;
+            newE11.twinHalfEdge = null;
+
+            newE8t.sourceVertex = facePoints[currentE0.face];
+            newE8t.previousHalfEdge = newE9;
+            newE8t.nextHalfEdge = currentE1;
+            newE8t.face = newF2;
+            newE8t.twinHalfEdge = null;
+
+            newE9t.sourceVertex = facePoints[currentE1.face];
+            newE9t.previousHalfEdge = newE10;
+            newE9t.nextHalfEdge = currentE3;
+            newE9t.face = newF2;
+            newE9t.twinHalfEdge = null;
+
+            newE10t.sourceVertex = facePoints[currentE2.face];
+            newE10t.previousHalfEdge = newE11;
+            newE10t.nextHalfEdge = currentE5;
+            newE10t.face = newF2;
+            newE10t.twinHalfEdge = null;
+
+            newE11t.sourceVertex = facePoints[currentE3.face];
+            newE11t.previousHalfEdge = newE8;
+            newE11t.nextHalfEdge = currentE7;
+            newE11t.face = newF2;
+            newE11t.twinHalfEdge = null;
+
+            currentE0.face = newF1;
+            currentE1.face = newF2;
+            currentE2.face = newF2;
+            currentE3.face = newF3;
+            currentE4.face = newF4;
+            currentE5.face = newF4;
+            currentE6.face = newF4;
+            currentE7.face = newF1;
+
+            newVertices.Add(newE8t.sourceVertex);
+            newVertices.Add(newE9t.sourceVertex);
+            newVertices.Add(newE10t.sourceVertex);
+            newVertices.Add(newE11t.sourceVertex);
+
+            newEdges.Add(newE8);
+            newEdges.Add(newE8t);
+            newEdges.Add(newE9);
+            newEdges.Add(newE9t);
+            newEdges.Add(newE10);
+            newEdges.Add(newE10t);
+            newEdges.Add(newE11);
+            newEdges.Add(newE11t);
+
+            newFaces.Add(newF1);
+            newFaces.Add(newF2);
+            newFaces.Add(newF3);
+            newFaces.Add(newF4);
+        }
+
+        return new HalfEdgeMesh(newVertices.ToArray(), newEdges, newFaces);
+    }
+}
+
+class PointsCouple
+{
+    private List<Vector3> l = new List<Vector3> ();
+
+    public PointsCouple(Vector3 a, Vector3 b) {
+        l.Add(a);
+        l.Add(b);
+    }
+
+    public override int GetHashCode()
+    {
+        return l[0].GetHashCode() + 2 * l[1].GetHashCode();
+    }
+
+    public override bool Equals(object b)
+    {
+        return Equals(b as PointsCouple);
+    }
+
+    public bool Equals(PointsCouple b)
+    {
+        return true;
+        return l[0].Equals(b.l[0]) && l[1].Equals(b.l[1]);
     }
 }

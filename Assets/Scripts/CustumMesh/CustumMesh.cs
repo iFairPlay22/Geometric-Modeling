@@ -24,7 +24,6 @@ namespace Assets.Scripts.CustumForm
             // m_Mf.sharedMesh = CreateStrip(new Vector3(4, 0, 2), 8);
             // m_Mf.sharedMesh = CreatePlane(new Vector3(10, 0, 15), 3, 2);
 
-
             m_Mf.sharedMesh = CreateCubeMesh();
             HalfEdgeMesh halfEdgeMesh = new HalfEdgeMesh(m_Mf.sharedMesh);
 
@@ -61,7 +60,7 @@ namespace Assets.Scripts.CustumForm
         {
             Gizmos.color = c;
             foreach (Vector3 pt in l)
-                Gizmos.DrawSphere(pt, 0.1f);
+                Gizmos.DrawSphere(pt, 0.05f);
         }
 
 
