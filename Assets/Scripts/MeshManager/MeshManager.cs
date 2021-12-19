@@ -4,66 +4,111 @@ using UnityEngine;
 
 namespace Assets.Scripts.CustumForm
 {
-    [RequireComponent(typeof(MeshFilter))]
-    public class CustumMesh : MonoBehaviour
+    public enum FormEnum
     {
-        private MeshFilter m_Mf;
+        Cube, StraightPrism
+    }
+
+    public class MeshManager : MonoBehaviour
+    {
+        [SerializeField]
+        private Material meshMaterial;
+
+        [SerializeField]
+        private FormEnum form;
+
+        [SerializeField]
+        private int subdisionNb = 2;
+
+        private List<HalfEdgeMesh> halfEdgeMeshes = new List<HalfEdgeMesh>();
+        private List<Vector3> offsets = new List<Vector3>();
 
         private delegate Vector3 ComputePositionFromKxKz(float kx, float kz);
 
-        private List<Vector3> facePoints;
-        private List<Vector3> edgePoints;
-        private List<Vector3> vertexPoints;
-
-        private void Awake()
+        private void Start()
         {
-            m_Mf = GetComponent<MeshFilter>();
-
             // m_Mf.sharedMesh = CreateTriangle();
             // m_Mf.sharedMesh = CreateQuad(new Vector3(4, 0, 2));
             // m_Mf.sharedMesh = CreateStrip(new Vector3(4, 0, 2), 8);
             // m_Mf.sharedMesh = CreatePlane(new Vector3(10, 0, 15), 3, 2);
 
-            m_Mf.sharedMesh = CreateCubeMesh();
-            HalfEdgeMesh halfEdgeMesh = new HalfEdgeMesh(m_Mf.sharedMesh);
+            AddCatmullSubdivisions();
+        }
 
-            // DEBUG
-            Dictionary<Face, Vector3> fp = CatmullClark.getFacePoints(halfEdgeMesh);
-            Dictionary<HalfEdge, Vector3> ep = CatmullClark.getEdgePoints(halfEdgeMesh, fp);
-            Dictionary<Vector3, Vector3> vp = CatmullClark.getVertexPoints(halfEdgeMesh, fp);
-            facePoints = new List<Vector3>(fp.Values);
-            edgePoints = new List<Vector3>(ep.Values);
-            vertexPoints = new List<Vector3>(vp.Values);
-            // FIN DEBUG
+        private void AddCatmullSubdivisions()
+        {
+            Mesh baseMesh = form == FormEnum.Cube ? CreateCubeMesh() : CreateStraightPrismMesh();
 
-            HalfEdgeMesh subdivedMesh = CatmullClark.subdiviseMesh(halfEdgeMesh);
-            Mesh newMesh = subdivedMesh.toVertexFace();
-            m_Mf.sharedMesh = newMesh;
+            HalfEdgeMesh currentHalfEdgeMesh = null;
 
-            Debug.Log("Old => " + halfEdgeMesh.GetInfos());
-            Debug.Log("New => " + subdivedMesh.GetInfos());
+            for (int i = 0; i < Mathf.Abs(subdisionNb) + 1; i++)
+            {
+                if (i == 0)
+                {
+                    currentHalfEdgeMesh = new HalfEdgeMesh(baseMesh);
+                }
+                else
+                {
+                    currentHalfEdgeMesh = CatmullClark.subdiviseMesh(currentHalfEdgeMesh);
+                }
 
-            // Debug.Log(MeshDisplayInfo.ExportMeshCSV(m_Mf.sharedMesh));
+                Mesh currentMesh = currentHalfEdgeMesh.toVertexFace();
+                Vector3 offset = new Vector3(i * 2 + 1 - subdisionNb * 2 - 5, 0, 0);
+                CreateGameObjectMesh("CatmullMesh " + i, currentMesh, offset);
+                
+                offsets.Add(offset);
+                halfEdgeMeshes.Add(currentHalfEdgeMesh);
+
+                Debug.Log((i + 1) + " => " + currentHalfEdgeMesh.GetInfos());
+                // Debug.Log(MeshDisplayInfo.ExportMeshCSV(currentMesh));
+
+            }
+        }
+
+        private GameObject CreateGameObjectMesh(string title, Mesh mesh, Vector3 position)
+        {
+            GameObject go = new GameObject(title);
+
+            go.transform.position = position;
+
+            go.AddComponent<MeshRenderer>();
+            Material[] materials = { meshMaterial };
+            Debug.Log(materials[0]);
+            go.GetComponent<MeshRenderer>().materials = materials;
+
+            go.AddComponent<MeshFilter>();
+            go.GetComponent<MeshFilter>().sharedMesh = mesh;
+
+            go.AddComponent<MeshDisplayInfo>();
+
+            return go;
         }
 
         private void OnDrawGizmos()
         {
-            if (facePoints != null && edgePoints != null && vertexPoints != null)
+            if (offsets != null && halfEdgeMeshes != null)
             {
-                drawPoints(Color.red, new List<Vector3>(facePoints));
-                drawPoints(Color.green, new List<Vector3>(edgePoints));
-                drawPoints(Color.blue, new List<Vector3>(vertexPoints));
+                for (int i = 0; i < halfEdgeMeshes.Count; i++)
+                {
+                    drawPoints(Color.green, halfEdgeMeshes[i].vertices, offsets[i]);
+                    drawLines(Color.black, halfEdgeMeshes[i].edges, offsets[i]);
+                }  
             }
         }
 
-        private void drawPoints(Color c, List<Vector3> l)
+        private void drawPoints(Color c, List<Vector3> l, Vector3 v)
         {
             Gizmos.color = c;
             foreach (Vector3 pt in l)
-                Gizmos.DrawSphere(pt, 0.05f);
+                Gizmos.DrawSphere(pt + v, 0.025f);
         }
 
-
+        private void drawLines(Color c, List<HalfEdge> h, Vector3 v)
+        {
+            Gizmos.color = c;
+            foreach (HalfEdge halfEdge in h)
+                Gizmos.DrawLine(halfEdge.sourceVertex + v, halfEdge.nextHalfEdge.sourceVertex + v);
+        }
 
         #region Formes de base
 
@@ -132,6 +177,58 @@ namespace Assets.Scripts.CustumForm
             vertices[i++] = new Vector3(0, 0, 1);
             vertices[i++] = new Vector3(1, 0, 1);
             vertices[i++] = new Vector3(1, 0, 0);
+            vertices[i++] = new Vector3(0, 1, 0);
+            vertices[i++] = new Vector3(0, 1, 1);
+            vertices[i++] = new Vector3(1, 1, 1);
+            vertices[i++] = new Vector3(1, 1, 0);
+
+            int[] quads = new int[6 * 4];
+            i = 0;
+            quads[i++] = 3;
+            quads[i++] = 2;
+            quads[i++] = 1;
+            quads[i++] = 0;
+            quads[i++] = 7;
+            quads[i++] = 3;
+            quads[i++] = 0;
+            quads[i++] = 4;
+            quads[i++] = 4;
+            quads[i++] = 5;
+            quads[i++] = 6;
+            quads[i++] = 7;
+            quads[i++] = 5;
+            quads[i++] = 1;
+            quads[i++] = 2;
+            quads[i++] = 6;
+            quads[i++] = 7;
+            quads[i++] = 6;
+            quads[i++] = 2;
+            quads[i++] = 3;
+            quads[i++] = 0;
+            quads[i++] = 1;
+            quads[i++] = 5;
+            quads[i++] = 4;
+
+            newMesh.vertices = vertices;
+            newMesh.SetIndices(quads, MeshTopology.Quads, 0);
+            newMesh.RecalculateBounds();
+            newMesh.RecalculateNormals();
+
+            return newMesh;
+        }
+
+        private Mesh CreateStraightPrismMesh()
+        {
+            Mesh newMesh = new Mesh();
+            newMesh.name = "Straight Prism";
+            int i;
+
+            Vector3[] vertices = new Vector3[8];
+            i = 0;
+            vertices[i++] = new Vector3(0, 0, -0.5f);
+            vertices[i++] = new Vector3(0, 0, +1.5f);
+            vertices[i++] = new Vector3(1, 0, +1.5f);
+            vertices[i++] = new Vector3(1, 0, -0.5f);
             vertices[i++] = new Vector3(0, 1, 0);
             vertices[i++] = new Vector3(0, 1, 1);
             vertices[i++] = new Vector3(1, 1, 1);

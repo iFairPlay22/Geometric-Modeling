@@ -41,7 +41,7 @@ public class Geometry : MonoBehaviour
     private GameObject cylinderObject;
 
     // Cylindre mathématique
-    private Cylinder cylinder = new Cylinder(new Vector3(30, -2, 0), new Vector3(30, 5, 0), 1.5f);
+    private Cylinder cylinder = new Cylinder(new Vector3(30, -5, 0), new Vector3(30, 8, 0), 1.5f);
 
     #endregion Cylinder attributes
 

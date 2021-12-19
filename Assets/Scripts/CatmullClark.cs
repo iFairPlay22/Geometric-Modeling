@@ -114,12 +114,11 @@ class CatmullClark
         }
 
         // Pour tous les points
-        Vector3[] vertices = halfEdgeMesh.vertices;
         Dictionary<Vector3, Vector3> d = new Dictionary<Vector3, Vector3>();
 
-        for (int i = 0; i < vertices.Length; i++)
+        for (int i = 0; i < halfEdgeMesh.vertices.Count; i++)
         {
-            Vector3 vertice = vertices[i];
+            Vector3 vertice = halfEdgeMesh.vertices[i];
             List<HalfEdge> edgesOrigin = edgesByOrigin[vertice];
 
             // Calcul de N, Q, R
@@ -314,15 +313,7 @@ class CatmullClark
             newFaces.Add(newF);
         }
 
-        // int ko = 0, ok = 0; 
-        // for (int i = 0; i < newEdges.Count; i++)
-        //     if (newEdges[i].nextHalfEdge == null)
-        //         ko++;
-        //     else
-        //         ok++;
-        // Debug.Log("KO : " + ko + " / " + (ko + ok));
-
-        return new HalfEdgeMesh(newVertices.ToArray(), newEdges, newFaces);
+        return new HalfEdgeMesh(newVertices, newEdges, newFaces);
     }
 
     public static HalfEdgeMesh getMeshWithNewFaces(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> facePoints)
@@ -369,49 +360,65 @@ class CatmullClark
             newE8.previousHalfEdge = currentE0;
             newE8.nextHalfEdge = newE11t;
             newE8.face = newF1;
-            newE8.twinHalfEdge = null;
+            newE8.twinHalfEdge = newE8t;
+            newE8.previousHalfEdge.nextHalfEdge = newE8;
+            newE8.nextHalfEdge.previousHalfEdge = newE8;
 
             newE9.sourceVertex = currentE3.sourceVertex;
             newE9.previousHalfEdge = currentE2;
             newE9.nextHalfEdge = newE8t;
             newE9.face = newF2;
-            newE9.twinHalfEdge = null;
+            newE9.twinHalfEdge = newE9t;
+            newE9.previousHalfEdge.nextHalfEdge = newE9;
+            newE9.nextHalfEdge.previousHalfEdge = newE9;
 
             newE10.sourceVertex = currentE5.sourceVertex;
             newE10.previousHalfEdge = currentE4;
             newE10.nextHalfEdge = newE9t;
             newE10.face = newF3;
-            newE10.twinHalfEdge = null;
+            newE10.twinHalfEdge = newE10t;
+            newE10.previousHalfEdge.nextHalfEdge = newE10;
+            newE10.nextHalfEdge.previousHalfEdge = newE10;
 
             newE11.sourceVertex = currentE7.sourceVertex;
             newE11.previousHalfEdge = currentE6;
             newE11.nextHalfEdge = newE10t;
             newE11.face = newF4;
-            newE11.twinHalfEdge = null;
+            newE11.twinHalfEdge = newE11t;
+            newE11.previousHalfEdge.nextHalfEdge = newE11;
+            newE11.nextHalfEdge.previousHalfEdge = newE11;
 
             newE8t.sourceVertex = facePoints[currentE0.face];
             newE8t.previousHalfEdge = newE9;
             newE8t.nextHalfEdge = currentE1;
             newE8t.face = newF2;
-            newE8t.twinHalfEdge = null;
+            newE8t.twinHalfEdge = newE8;
+            newE8t.previousHalfEdge.nextHalfEdge = newE8t;
+            newE8t.nextHalfEdge.previousHalfEdge = newE8t;
 
             newE9t.sourceVertex = facePoints[currentE1.face];
             newE9t.previousHalfEdge = newE10;
             newE9t.nextHalfEdge = currentE3;
             newE9t.face = newF2;
-            newE9t.twinHalfEdge = null;
+            newE9t.twinHalfEdge = newE9;
+            newE9t.previousHalfEdge.nextHalfEdge = newE9t;
+            newE9t.nextHalfEdge.previousHalfEdge = newE9t;
 
             newE10t.sourceVertex = facePoints[currentE2.face];
             newE10t.previousHalfEdge = newE11;
             newE10t.nextHalfEdge = currentE5;
             newE10t.face = newF2;
-            newE10t.twinHalfEdge = null;
+            newE10t.twinHalfEdge = newE10;
+            newE10t.previousHalfEdge.nextHalfEdge = newE10t;
+            newE10t.nextHalfEdge.previousHalfEdge = newE10t;
 
             newE11t.sourceVertex = facePoints[currentE3.face];
             newE11t.previousHalfEdge = newE8;
             newE11t.nextHalfEdge = currentE7;
             newE11t.face = newF2;
-            newE11t.twinHalfEdge = null;
+            newE11t.twinHalfEdge = newE11;
+            newE11t.previousHalfEdge.nextHalfEdge = newE11t;
+            newE11t.nextHalfEdge.previousHalfEdge = newE11t;
 
             currentE0.face = newF1;
             currentE1.face = newF2;
@@ -442,7 +449,7 @@ class CatmullClark
             newFaces.Add(newF4);
         }
 
-        return new HalfEdgeMesh(newVertices.ToArray(), newEdges, newFaces);
+        return new HalfEdgeMesh(newVertices, newEdges, newFaces);
     }
 }
 
@@ -467,7 +474,6 @@ class PointsCouple
 
     public bool Equals(PointsCouple b)
     {
-        return true;
         return l[0].Equals(b.l[0]) && l[1].Equals(b.l[1]);
     }
 }

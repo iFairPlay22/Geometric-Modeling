@@ -7,13 +7,13 @@ using UnityEngine;
 
 public class HalfEdgeMesh
 {
-    public readonly Vector3[] vertices;
+    public readonly List<Vector3> vertices;
 
     public readonly List<HalfEdge> edges;
 
     public readonly List<Face> faces;
 
-    public HalfEdgeMesh(Vector3[] vertices, List<HalfEdge> edges, List<Face> faces)
+    public HalfEdgeMesh(List<Vector3> vertices, List<HalfEdge> edges, List<Face> faces)
     {
         this.vertices = vertices;
         this.edges = edges;
@@ -27,7 +27,7 @@ public class HalfEdgeMesh
 
         int[] quads = mesh.GetIndices(0);
 
-        this.vertices = mesh.vertices;
+        this.vertices = mesh.vertices.ToList();
         this.edges = new List<HalfEdge>();
         this.faces = new List<Face>();
         Dictionary<Vector2, HalfEdge> map = new Dictionary<Vector2, HalfEdge>();
@@ -125,7 +125,7 @@ public class HalfEdgeMesh
     {
         Mesh newMesh = new Mesh();
         newMesh.name = "Vertex face";
-        newMesh.vertices = this.vertices;
+        newMesh.vertices = this.vertices.ToArray();
 
         int[] newQuads = new int[this.faces.Count * 4];
         int index = 0;
@@ -137,7 +137,7 @@ public class HalfEdgeMesh
             for (int j = 0; j < 4; j++)
             {
                 Vector3 point = halfEdge.sourceVertex;
-                newQuads[index++] = Array.IndexOf(this.vertices, point);
+                newQuads[index++] = Array.IndexOf(newMesh.vertices, point);
                 halfEdge = halfEdge.nextHalfEdge;
             }
         }
@@ -152,6 +152,6 @@ public class HalfEdgeMesh
 
     public string GetInfos()
     {
-        return "Vertices : " + vertices.Length + ", Edges: " + edges.Count + ", Faces: " + faces.Count;
+        return "Vertices : " + vertices.Count + ", Edges: " + edges.Count + ", Faces: " + faces.Count;
     }
 }
