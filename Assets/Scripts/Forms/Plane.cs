@@ -8,7 +8,7 @@ public class Plane
     #region Attributes
 
     private Vector3 n;
-    ///<summary> Vecteur normal au plan </summary>
+    ///<summary> Vecteur normal unitaire au plan </summary>
     public Vector3 N
     {
         get { return n; }
@@ -56,4 +56,20 @@ public class Plane
     }
 
     #endregion Constructors
+
+    #region Calcul de distance
+
+    ///<summary> Retourne la distance entre un plan et un point </summary>
+    ///<param name="point">Le point à comparer</param>
+    ///<returns>La distance en float</returns>
+    public float GetDistance(Vector3 point)
+    {
+        // On récupère un point du plan
+        Vector3 pointM = new Vector3(0, 0, -D / N.z);
+
+        // On calcule la distance
+        return Vector3.Dot(N, point - pointM);
+    }
+
+    #endregion Calcul de distance
 }

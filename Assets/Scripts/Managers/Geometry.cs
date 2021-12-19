@@ -1,11 +1,29 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 ///<summary> Gestionnaire d'affichage des formes géométriques et de leurs intersections dans la scène </summary>
 public class Geometry : MonoBehaviour
 {
     #region Attributes
+
+    #region Point attributes
+
+    ///<summary> Représentation mathématique d'une droite </summary>
+    private Vector3 point = new Vector3(38, 2, 0);
+
+    ///<summary> Vecteur des coefficients de rotation du point </summary>
+    private Vector3 pointRotation = new Vector3(1, 1, 0);
+
+    #endregion Line attributes
+
+    #region Line attributes
+
+    ///<summary> Représentation mathématique d'une droite </summary>
+    private Line line = new Line(new Vector3(37, 0, 0), new Vector3(40, 0, 0));
+
+    #endregion Line attributes
 
     #region Segment attributes
 
@@ -46,6 +64,13 @@ public class Geometry : MonoBehaviour
 
     #endregion Cylinder attributes
 
+    #region GUI attributes
+
+    /// <summary> Style de GUI utilisé par défaut </summary>
+    private GUIStyle gUIStyle = new GUIStyle();
+
+    #endregion GUI attributes
+
     #endregion Attributes
 
     #region Printing
@@ -53,6 +78,22 @@ public class Geometry : MonoBehaviour
 
     private void Update()
     {
+        #region Point printing
+
+        // On mets à jour les coefficients de rotation du point
+
+        if (point.x < line.P1.x) pointRotation.x = 1;
+        else if (line.P2.x < point.x) pointRotation.x = -1;
+
+        if (point.y < 0) pointRotation.y = 1;
+        else if (2 < point.y) pointRotation.y = -1;
+
+        // On bouge le point
+        Vector3 moveV = pointRotation / 2 * Time.deltaTime;
+        point += moveV;
+
+        #endregion Point printing
+
         #region Segment printing
 
         // On mets à jour les coefficients de rotation du segment
@@ -66,7 +107,7 @@ public class Geometry : MonoBehaviour
         else if (2 < segment.P1.z) segmentRotation.z = -1;
 
         // On bouge le segment
-        Vector3 moveV = segmentRotation * Time.deltaTime;
+        moveV = segmentRotation * Time.deltaTime;
         segment.P1 += moveV;
         segment.P2 += moveV;
 
@@ -98,7 +139,26 @@ public class Geometry : MonoBehaviour
 
     public void OnDrawGizmos()
     {
-        #region Segment printing
+        #region Point printing
+
+        // On affiche le point
+        Gizmos.DrawSphere(point, 0.3f); 
+
+
+        // On affiche la distance point / droite
+        Handles.Label(point + new Vector3(0, 3, 0), string.Format("Distance point / droite = {0:0.00}", line.GetDistance(point)), gUIStyle);
+        Handles.Label(point + new Vector3(0, 2, 0), string.Format("Distance point / plan = {0:0.00}", plane.GetDistance(point)), gUIStyle);
+
+        #endregion Segment printing
+
+        #region Line printing
+
+        // On affiche la droite
+        Gizmos.DrawLine(line.P1, line.P2);
+
+        #endregion Line printing
+
+        #region Point printing
 
         // On affiche le segment
         Gizmos.DrawLine(segment.P1, segment.P2);
