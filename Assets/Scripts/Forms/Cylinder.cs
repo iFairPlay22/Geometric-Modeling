@@ -7,7 +7,7 @@ public class Cylinder
 {
     #region Attributes
     private Vector3 p1;
-    ///<summary> Point d'origine du cylindre </summary>
+    ///<summary> Point de départ du cylindre </summary>
     public Vector3 P1
     {
         get { return p1; }
@@ -15,7 +15,7 @@ public class Cylinder
     }
 
     private Vector3 p2;
-    ///<summary> Point d'arrivé du cylindre</summary>
+    ///<summary> Point d'arrivée du cylindre</summary>
     public Vector3 P2
     {
         get { return p2; }
@@ -32,6 +32,10 @@ public class Cylinder
 
     #endregion Attributes
 
+    ///<summary> Construction d'un cylindre à partir de deux points et d'un rayon </summary>
+    ///<param name="p1">Point de départ du cylindre</param>
+    ///<param name="p2">Point d'arrivée du cylindre</param>
+    ///<param name="r">Rayon du cylindre</param>
     public Cylinder(Vector3 p1, Vector3 p2, float r)
     {
         this.p1 = p1;

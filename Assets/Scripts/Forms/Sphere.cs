@@ -24,6 +24,9 @@ public class Sphere
 
     #endregion Attributes
 
+    ///<summary> Construction d'une Sphere </summary>
+    ///<param name="p">Centre de la sphère</param>
+    ///<param name="r">Rayon de la sphère</param>
     public Sphere(Vector3 p, float r)
     {
         this.p = p;

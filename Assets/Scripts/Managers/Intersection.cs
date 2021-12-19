@@ -6,6 +6,10 @@ using UnityEngine;
 public class Intersection
 {
     ///<summary> Intersection segment-plan </summary>
+    ///<param name="segment">Le segment</param>
+    ///<param name="plane">Le plan</param>
+    ///<param name="interP">Variable à remplir par le point d'intersection</param>
+    ///<param name="vectN">Variable à remplir par le vecteur normal d'intersection</param>
     public static bool InterSegPlane(Segment segment, Plane plane, out Vector3 interP, out Vector3 vectN)
     {
         interP = new Vector3(); vectN = new Vector3();
@@ -48,6 +52,10 @@ public class Intersection
     }
 
     ///<summary> Intersection segment-sphère </summary>
+    ///<param name="segment">Le segment</param>
+    ///<param name="sphere">La sphère</param>
+    ///<param name="interP">Variable à remplir par le point d'intersection</param>
+    ///<param name="vectN">Variable à remplir par le vecteur normal d'intersection</param>
     public static bool InterSegSphere(Segment segment, Sphere sphere, out Vector3 interP, out Vector3 vectN)
     {
         interP = new Vector3(); vectN = new Vector3();
@@ -100,6 +108,10 @@ public class Intersection
     }
 
     ///<summary> Intersection segment-cylindre </summary>
+    ///<param name="segment">Le segment</param>
+    ///<param name="cylinder">Le cylindre</param>
+    ///<param name="interP">Variable à remplir par le point d'intersection</param>
+    ///<param name="vectN">Variable à remplir par le vecteur normal d'intersection</param>
     public static bool InterSegCylinder(Segment segment, Cylinder cylinder, out Vector3 interP, out Vector3 vectN)
     {
         interP = new Vector3(); vectN = new Vector3(); 

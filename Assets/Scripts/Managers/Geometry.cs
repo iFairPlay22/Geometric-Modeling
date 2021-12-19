@@ -10,7 +10,7 @@ public class Geometry : MonoBehaviour
     #region Segment attributes
 
     ///<summary> Vecteur des coefficients de rotation du segment </summary>
-    private Vector3 kVect = new Vector3(1, 1, 1);
+    private Vector3 segmentRotation = new Vector3(1, 1, 1);
 
     ///<summary> Représentation mathématique du segment </summary>
     private Segment segment = new Segment(new Vector3(0, 0, 0), new Vector3(35, 0, 0));
@@ -56,17 +56,17 @@ public class Geometry : MonoBehaviour
         #region Segment printing
 
         // On mets à jour les coefficients de rotation du segment
-        if (segment.P1.x < -10) kVect.x = 1;
-        else if (10 < segment.P1.x) kVect.x = -1;
+        if (segment.P1.x < -10) segmentRotation.x = 1;
+        else if (10 < segment.P1.x) segmentRotation.x = -1;
 
-        if (segment.P1.y < -5) kVect.y = 1;
-        else if (5 < segment.P1.y) kVect.y = -1;
+        if (segment.P1.y < -5) segmentRotation.y = 1;
+        else if (5 < segment.P1.y) segmentRotation.y = -1;
         
-        if (segment.P1.z < -2) kVect.z = 1;
-        else if (2 < segment.P1.z) kVect.z = -1;
+        if (segment.P1.z < -2) segmentRotation.z = 1;
+        else if (2 < segment.P1.z) segmentRotation.z = -1;
 
         // On bouge le segment
-        Vector3 moveV = kVect * Time.deltaTime;
+        Vector3 moveV = segmentRotation * Time.deltaTime;
         segment.P1 += moveV;
         segment.P2 += moveV;
 
@@ -137,6 +137,8 @@ public class Geometry : MonoBehaviour
         {
             Gizmos.color = Color.blue;
         }
+
+        // On affiche la sphère
         Gizmos.DrawSphere(sphere.P, sphere.R);
 
         #endregion Sphere printing
@@ -157,11 +159,13 @@ public class Geometry : MonoBehaviour
             }
         }
 
-        #endregion Cylinder color printing
+        #endregion Cylinder printing
     }
 
 
     ///<summary> Affiche le point d'intersection et le vecteur normal d'intersection de la forme par rapport au segment </summary>
+    ///<param name="interP">Point d'intersection </param>
+    ///<param name="vectN">Vecteur normal d'intersection</param>
     private void DrawIntersectionInfos(Vector3 interP, Vector3 vectN)
     {
         Gizmos.color = Color.green;

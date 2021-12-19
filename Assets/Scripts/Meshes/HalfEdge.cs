@@ -11,13 +11,13 @@ public class HalfEdge
     ///<summary> Vertex d'origine de l'HE </summary>
     public Vector3 sourceVertex;
 
-    ///<summary> HalfEdge précédent de l'HE courant </summary>
+    ///<summary> HalfEdge précédente de l'HE courant </summary>
     public HalfEdge previousHalfEdge;
 
-    ///<summary> HalfEdge suivant de l'HE courant </summary>
+    ///<summary> HalfEdge suivante de l'HE courant </summary>
     public HalfEdge nextHalfEdge;
 
-    ///<summary> HalfEdge "opposé" de l'HE courant </summary>
+    ///<summary> HalfEdge opposée de l'HE courant </summary>
     public HalfEdge twinHalfEdge;
 
     ///<summary> Face correspondante de l'HE </summary>

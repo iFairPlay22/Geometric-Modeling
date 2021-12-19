@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-///<summary> Classe statique pour la gestion de subdivision de Mesh avec Catmull-Clark </summary>
+///<summary> Classe statique permettant de gérer la subdivision de Mesh avec Catmull-Clark </summary>
 class CatmullClark
 {
     ///<summary> Subdivision d'HEMesh </summary>
@@ -11,13 +11,13 @@ class CatmullClark
     {
         HalfEdgeMesh newHalfEdgeMesh;
 
-        // Création de Face Points
+        // Récupération des Face Points
         Dictionary<Face, Vector3> facePoints = GetFacePoints(halfEdgeMesh);
 
-        // Création de Edge Points
+        // Récupération des Edge Points
         Dictionary<HalfEdge, Vector3> edgePoints = GetEdgePoints(halfEdgeMesh, facePoints);
 
-        // Update des Vertices
+        // Récupération des Vertices Points
         Dictionary<Vector3, Vector3> vertexPoints = GetVertexPoints(halfEdgeMesh, facePoints);
 
         // Split des Edges
@@ -31,8 +31,8 @@ class CatmullClark
 
     #region SubdivisionSteps
 
-    ///<summary> Création des Face Points et récupération de tous les isobarycentres </summary>
-    public static Dictionary<Face, Vector3> GetFacePoints(HalfEdgeMesh halfEdgeMesh)
+    ///<summary> Récupération de tous les isobarycentres </summary>
+    private static Dictionary<Face, Vector3> GetFacePoints(HalfEdgeMesh halfEdgeMesh)
     {
         List<Face> faces = halfEdgeMesh.faces;
         Dictionary<Face, Vector3> d = new Dictionary<Face, Vector3>();
@@ -60,8 +60,8 @@ class CatmullClark
         return d;
     }
 
-    ///<summary> Création de Edge Points et récupération des moyennes des vertices et des isobarycentres </summary>
-    public static Dictionary<HalfEdge, Vector3> GetEdgePoints(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> facePoints)
+    ///<summary>Récupération des moyennes des vertices et des isobarycentres </summary>
+    private static Dictionary<HalfEdge, Vector3> GetEdgePoints(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> facePoints)
     {
         List<HalfEdge> edges = halfEdgeMesh.halfEdges;
         Dictionary<HalfEdge, Vector3> d = new Dictionary<HalfEdge, Vector3>();
@@ -99,8 +99,8 @@ class CatmullClark
         return d;
     }
 
-    ///<summary> Mise à jour des vertices </summary>
-    public static Dictionary<Vector3, Vector3> GetVertexPoints(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> facePoints)
+    ///<summary> Récupération des nouvelles coordonnées des vertices </summary>
+    private static Dictionary<Vector3, Vector3> GetVertexPoints(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> facePoints)
     {
         List<HalfEdge> edges = halfEdgeMesh.halfEdges;
         Dictionary<Vector3, List<HalfEdge>> edgesByOrigin = new Dictionary<Vector3, List<HalfEdge>>();
@@ -147,7 +147,7 @@ class CatmullClark
     }
 
     ///<summary> Division des Edges </summary>
-    public static HalfEdgeMesh GetMeshWithNewEdges(HalfEdgeMesh halfEdgeMesh, Dictionary<Vector3, Vector3> vertexPoints, Dictionary<HalfEdge, Vector3> edgePoints, Dictionary<Face, Vector3> facePoints)
+    private static HalfEdgeMesh GetMeshWithNewEdges(HalfEdgeMesh halfEdgeMesh, Dictionary<Vector3, Vector3> vertexPoints, Dictionary<HalfEdge, Vector3> edgePoints, Dictionary<Face, Vector3> facePoints)
     {
         List<Vector3> newVertices = new List<Vector3>();
         List<HalfEdge> newEdges = new List<HalfEdge>();
@@ -320,7 +320,7 @@ class CatmullClark
     }
 
     ///<summary> Division des Faces </summary>
-    public static HalfEdgeMesh GetMeshWithNewFaces(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> facePoints)
+    private static HalfEdgeMesh GetMeshWithNewFaces(HalfEdgeMesh halfEdgeMesh, Dictionary<Face, Vector3> facePoints)
     {
         List<HalfEdge> newEdges = halfEdgeMesh.halfEdges;
         List<Face> newFaces = new List<Face>();
@@ -459,20 +459,27 @@ class CatmullClark
     #endregion SubdivisionSteps
 }
 
-///<summary> Couple générique de deux points </summary>
+///<summary> Couple générique de deux points pouvant être comparés entre eux </summary>
 class PointsCouple
 {
+    ///<summary> Liste de 2 points </summary>
     private readonly List<Vector3> points = new List<Vector3> ();
 
+    ///<summary> Créer une liste de 2 points </summary>
+    ///<param name="a">Point A</param>
+    ///<param name="b">Point B</param>
     public PointsCouple(Vector3 a, Vector3 b) {
         points.Add(a);
         points.Add(b);
     }
 
+    ///<summary> La valeur de hachage des points dépend des valeurs contenues dans la liste </summary>
     public override int GetHashCode()
     {
         return points[0].GetHashCode() + 2 * points[1].GetHashCode();
     }
+
+    ///<summary> Deux listes de points sont égales si elles contiennent les mêmes valeurs dans le même ordre </summary>
     public override bool Equals(object b)
     {
         return Equals(b as PointsCouple);

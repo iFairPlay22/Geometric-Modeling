@@ -4,45 +4,55 @@ using UnityEngine;
 
 namespace Assets.Scripts.CustumForm
 {
-    ///<summary> Enumération des noms de formes à subdiviser </summary>
+    ///<summary> Enumération des noms de formes possibles à subdiviser </summary>
     public enum FormEnum
     {
         Cube, StraightPrism
     }
 
-    ///<summary> Gestionnaire de création et de modification de meshs (meshes customs, subdivisions de meshes...) </summary>
+    ///<summary> Gestionnaire de création et de modification de meshs </summary>
     public class MeshManager : MonoBehaviour
     {
         #region Attributes
 
         [SerializeField]
+        ///<summary> Le matérial a injecter dans les game objects des formes crées </summary>
         private Material meshMaterial;
 
-        ///<summary> Forme à subdiviser </summary>
+        ///<summary> Le type de forme à subdiviser </summary>
         [SerializeField]
         private FormEnum form;
 
-        ///<summary> Nombre de subdivisions consécutives à réaliser </summary>
+        ///<summary> Le nombre de subdivisions consécutives à réaliser </summary>
         [SerializeField]
         private int subdisionNb = 2;
 
-        ///<summary> Liste d'HEMesh pour la subdivision</summary>
+        ///<summary> Liste de Half Edge Mesh pour la subdivision</summary>
         private List<HalfEdgeMesh> halfEdgeMeshes = new List<HalfEdgeMesh>();
 
         ///<summary> Liste des positions des meshes subdivisés créés </summary>
         private List<Vector3> offsets = new List<Vector3>();
 
-        ///<summary> Position calculée à partir de kx et kz </summary>
+        ///<summary> Méthode de fonction utilisée pour le calcul de position de Mesh à partir de kx et kz </summary>
         private delegate Vector3 ComputePositionFromKxKz(float kx, float kz);
 
         #endregion Attributes
 
         private void Start()
         {
-            // m_Mf.sharedMesh = CreateTriangle();
-            // m_Mf.sharedMesh = CreateQuad(new Vector3(4, 0, 2));
-            // m_Mf.sharedMesh = CreateStrip(new Vector3(4, 0, 2), 8);
-            // m_Mf.sharedMesh = CreatePlane(new Vector3(10, 0, 15), 3, 2);
+            // Mesh mesh;
+            // mesh = CreateTriangleMesh();
+            // mesh = CreateQuadMesh(new Vector3(4, 0, 2));
+            // mesh = CreateCubeMesh();
+            // mesh = CreateStraightPrismMesh();
+            // mesh = CreateStripXZTriangles(new Vector3(4, 0, 2), 8);
+            // mesh = CreatePlane(new Vector3(10, 0, 15), 3, 2);
+            // mesh = CreatePlane(new Vector3(10, 0, 15), 3, 2);
+            // mesh = CreateSphere(5, ShereTypes.DEMI); 
+            // mesh = CreateRing(5, 2);
+            // mesh = CreateStripXZQuads(new Vector3(10, 0, 15), 50);
+            // CreateGameObjectMesh("Nom de forme", mesh, Vector3.zero);
+
             AddCatmullSubdivisions();
         }
 
@@ -56,13 +66,14 @@ namespace Assets.Scripts.CustumForm
 
             for (int i = 0; i < Mathf.Abs(subdisionNb) + 1; i++)
             {
-                //Création de la forme initiale à la première itération, puis des meshes subdivisés pour les autres itérations 
                 if (i == 0)
                 {
+                    // Création de la forme initiale à la première itération
                     currentHalfEdgeMesh = new HalfEdgeMesh(baseMesh);
                 }
                 else
                 {
+                    // Subdivision successive des mesh pour les autres itérations
                     currentHalfEdgeMesh = CatmullClark.SubdiviseMesh(currentHalfEdgeMesh);
                 }
 
@@ -80,6 +91,10 @@ namespace Assets.Scripts.CustumForm
         }
 
         ///<summary> Création d'un objet correspondant à une étape de la subdivision </summary>
+        ///<param name="title">Titre du game object</param>
+        ///<param name="mesh">Mesh à appliquer au game object</param>
+        ///<param name="position">Position du game object dans la scene</param>
+        ///<returns>Le game object créé</returns>
         private GameObject CreateGameObjectMesh(string title, Mesh mesh, Vector3 position)
         {
             GameObject go = new GameObject(title);
@@ -101,7 +116,7 @@ namespace Assets.Scripts.CustumForm
 
         #region Affichage
 
-        ///<summary> Affichage des vertices et edges du mesh subdivisé </summary>
+        ///<summary> Affichage des vertices et edges des mesh subdivisés </summary>
         private void OnDrawGizmos()
         {
             if (offsets != null && halfEdgeMeshes != null)
@@ -114,7 +129,7 @@ namespace Assets.Scripts.CustumForm
             }
         }
 
-        ///<summary> Affichage des vertices du mesh subdivisé </summary>
+        ///<summary> Affichage des vertices des mesh subdivisés </summary>
         private void DrawPoints(Color color, List<Vector3> vertices, Vector3 position)
         {
             Gizmos.color = color;
@@ -122,7 +137,7 @@ namespace Assets.Scripts.CustumForm
                 Gizmos.DrawSphere(pt + position, 0.025f);
         }
 
-        ///<summary> Affichage des edges du mesh subdivisé </summary>
+        ///<summary> Affichage des edges des mesh subdivisés </summary>
         private void DrawLines(Color color, List<HalfEdge> halfEdges, Vector3 position)
         {
             Gizmos.color = color;
@@ -136,6 +151,7 @@ namespace Assets.Scripts.CustumForm
 
         #region Formes de base
 
+        /// <summary> Crée un triangle à partir de la topologie de triangles </summary>
         private Mesh CreateTriangleMesh()
         {
             Mesh newMesh = new Mesh();
@@ -159,6 +175,7 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
+        /// <summary> Crée un carré à partir de la topologie de triangles </summary>
         private Mesh CreateQuadMesh(Vector3 size)
         {
             Mesh newMesh = new Mesh();
@@ -189,6 +206,7 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
+        /// <summary> Crée un cube à partir de la topologie de carrés </summary>
         private Mesh CreateCubeMesh()
         {
             Mesh newMesh = new Mesh();
@@ -241,6 +259,7 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
+        /// <summary> Crée un prisme droit à partir de la topologie de carrés </summary>
         private Mesh CreateStraightPrismMesh()
         {
             Mesh newMesh = new Mesh();
@@ -297,6 +316,7 @@ namespace Assets.Scripts.CustumForm
 
         #region Bandes de triangles
 
+        /// <summary> Création d'une bande 2D de triangles à partir de la topologie de triangles </summary>
         private Mesh CreateStripXZTriangles(Vector3 size, int nSegments)
         {
             Mesh newMesh = new Mesh();
@@ -334,6 +354,7 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
+        /// <summary> Création d'une bande 3D de triangles à partir de la topologie de triangles </summary>
         private Mesh CreatePlane(Vector3 size, int nSegmentsX, int nSegmentsZ)
         {
             Mesh newMesh = new Mesh();
@@ -381,6 +402,7 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
+        /// <summary> Création d'une bande 3D de triangles à partir de la topologie de triangles et d'une fonction de gestion de la structure du Mesh </summary>
         private Mesh CreateNormalizedPlane(int nSegmentsX, int nSegmentsZ, ComputePositionFromKxKz computePosition)
         {
             Mesh newMesh = new Mesh();
@@ -428,14 +450,17 @@ namespace Assets.Scripts.CustumForm
 
         #region Formes à partir de triangles
 
+        /// <summary> Types de formes possibles à dessiner vis à vis d'une sphère </summary>
         private enum ShereTypes { QUARTER, DEMI, FULL };
 
+        /// <summary> On associe le type de forme de la sphère à un coefficient pour le calcul des coordonnées des points </summary>
         private Dictionary<ShereTypes, float> SphereTypesDict = new Dictionary<ShereTypes, float>(){
-        {ShereTypes.QUARTER, 0.5f},
-        {ShereTypes.DEMI, 1.0f},
-        {ShereTypes.FULL, 2.0f}
-    };
+            {ShereTypes.QUARTER, 0.5f},
+            {ShereTypes.DEMI, 1.0f},
+            {ShereTypes.FULL, 2.0f}
+        };
 
+        /// <summary> Création d'une sphère à partir de la topologie de triangles </summary>
         private Mesh CreateSphere(int radius, ShereTypes sphereType, int nSegmentsX = 50, int nSegmentsZ = 50)
         {
             return CreateNormalizedPlane(nSegmentsX, nSegmentsZ, (kX, kZ) =>
@@ -453,6 +478,7 @@ namespace Assets.Scripts.CustumForm
             );
         }
 
+        /// <summary> Création d'un anneau à partir de la topologie de triangles </summary>
         private Mesh CreateRing(int radius, int height, int nSegmentsX = 50, int nSegmentsZ = 50)
         {
             return CreateNormalizedPlane(nSegmentsX, nSegmentsZ, (kX, kZ) =>
@@ -478,10 +504,11 @@ namespace Assets.Scripts.CustumForm
             });
         }
 
-        #endregion Triangles Strip
+        #endregion Formes à partir de triangles
 
         #region Bandes de carrés
 
+        /// <summary> Création d'un bande 2D de carrés à partir de la topologie de carrés </summary>
         private Mesh CreateStripXZQuads(Vector3 size, int nSegments)
         {
             Vector3 halfSize = size * .5f;
@@ -518,6 +545,7 @@ namespace Assets.Scripts.CustumForm
             return newMesh;
         }
 
+        /// <summary> Création d'un bande 3D de carrés à partir de la topologie de carrés et d'une fonction de gestion de la structure du Mesh </summary>
         private Mesh CreateNormalizedPlaneQuads(int nSegmentsX, int nSegmentsZ, ComputePositionFromKxKz computePosition)
         {
             Mesh newMesh = new Mesh();

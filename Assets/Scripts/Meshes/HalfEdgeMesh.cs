@@ -22,6 +22,10 @@ public class HalfEdgeMesh
 
     #region Constructors
 
+    ///<summary> Construction d'un HalfEdgeMesh </summary>
+    ///<param name="vertices">Points du mesh</param>
+    ///<param name="halfEdges">Segments du mesh</param>
+    ///<param name="faces">Faces du mesh</param>
     public HalfEdgeMesh(List<Vector3> vertices, List<HalfEdge> halfEdges, List<Face> faces)
     {
         this.vertices = vertices;
@@ -123,14 +127,6 @@ public class HalfEdgeMesh
 
             this.faces.Add(f);
         }
-
-        // Afficher le nombre de edges sans twinEdge
-        //
-        // int nb = 0;
-        // for (int i = 0; i < edges.Count; i++)
-        //    if (edges[i].twinHalfEdge == null)
-        //        nb++;
-        // Debug.Log("edges[i].twinHalfEdge == null " + nb + " / " + edges.Count);
     }
 
     #endregion Constructors

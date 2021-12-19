@@ -27,18 +27,28 @@ public class Plane
 
     #region Constructors
 
+    ///<summary> Construction d'un Plane </summary>
+    ///<param name="n">Vecteur normal au plan</param>
+    ///<param name="d">Distance signée</param>
     public Plane(Vector3 n, float d)
     {
         this.n = Vector3.Normalize(n);
         this.d = d;
     }
 
+    ///<summary> Construction d'un Plane </summary>
+    ///<param name="n">Vecteur normal au plan</param>
+    ///<param name="p">Vecteur directeur du plan</param>
     public Plane(Vector3 n, Vector3 p)
     {
         this.n = Vector3.Normalize(n);
         this.d = Vector3.Dot(p, n);
     }
 
+    ///<summary> Construction d'un Plane </summary>
+    ///<param name="p1">Un point du plan différent de p2 et p3</param>
+    ///<param name="p2">Un point du plan différent de p1 et p3</param>
+    ///<param name="p3">Un point du plan différent de p1 et p2</param>
     public Plane(Vector3 p1, Vector3 p2, Vector3 p3)
     {
         this.n = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
