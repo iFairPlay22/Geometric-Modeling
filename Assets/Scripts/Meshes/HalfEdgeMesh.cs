@@ -5,33 +5,45 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
+///<summary> Mesh constitué de HalfEdges </summary>
 public class HalfEdgeMesh
 {
+    #region Attributes
+    ///<summary> Liste des vertices du mesh </summary>
     public readonly List<Vector3> vertices;
 
-    public readonly List<HalfEdge> edges;
+    ///<summary> Liste des HalfEdges du mesh </summary>
+    public readonly List<HalfEdge> halfEdges;
 
+    ///<summary> Liste des Faces du mesh </summary>
     public readonly List<Face> faces;
 
-    public HalfEdgeMesh(List<Vector3> vertices, List<HalfEdge> edges, List<Face> faces)
+    #endregion Attributes
+
+    #region Constructors
+
+    public HalfEdgeMesh(List<Vector3> vertices, List<HalfEdge> halfEdges, List<Face> faces)
     {
         this.vertices = vertices;
-        this.edges = edges;
+        this.halfEdges = halfEdges;
         this.faces = faces;
+        
     }
 
+    ///<summary> Construction d'un HEMesh à partir d'un mesh standard de quads </summary>
     public HalfEdgeMesh(Mesh mesh)
     {
-        // Vérifications
+        // Vérification que le mesh ne soit pas null
         if (!mesh) throw new Exception("Mesh is null!");
 
+        //Initialisation des attributs et des variables locales
         int[] quads = mesh.GetIndices(0);
-
         this.vertices = mesh.vertices.ToList();
-        this.edges = new List<HalfEdge>();
+        this.halfEdges = new List<HalfEdge>();
         this.faces = new List<Face>();
         Dictionary<Vector2, HalfEdge> map = new Dictionary<Vector2, HalfEdge>();
 
+        //Création du mesh
         int index = 0;
         for (int i = 0; i < quads.Length / 4; i++)
         {
@@ -99,10 +111,10 @@ public class HalfEdgeMesh
 
             f.halfEdge = he0;
 
-            this.edges.Add(he0);
-            this.edges.Add(he1);
-            this.edges.Add(he2);
-            this.edges.Add(he3);
+            this.halfEdges.Add(he0);
+            this.halfEdges.Add(he1);
+            this.halfEdges.Add(he2);
+            this.halfEdges.Add(he3);
 
             map.Add(new Vector3(i0, i1), he0);
             map.Add(new Vector3(i1, i2), he1);
@@ -112,7 +124,7 @@ public class HalfEdgeMesh
             this.faces.Add(f);
         }
 
-        // Afficher le nombre de edge sans twinEdge
+        // Afficher le nombre de edges sans twinEdge
         //
         // int nb = 0;
         // for (int i = 0; i < edges.Count; i++)
@@ -121,15 +133,21 @@ public class HalfEdgeMesh
         // Debug.Log("edges[i].twinHalfEdge == null " + nb + " / " + edges.Count);
     }
 
-    public Mesh toVertexFace()
+    #endregion Constructors
+
+    #region Functions
+
+    ///<summary> Conversion d'un HEMesh en mesh standard de quads </summary>
+    public Mesh ToQuadsMesh()
     {
+        //Initialisation 
         Mesh newMesh = new Mesh();
         newMesh.name = "Vertex face";
         newMesh.vertices = this.vertices.ToArray();
-
         int[] newQuads = new int[this.faces.Count * 4];
         int index = 0;
 
+        //Indexation
         for (int i = 0; i < this.faces.Count; i++)
         {
             HalfEdge halfEdge = this.faces[i].halfEdge;
@@ -142,16 +160,20 @@ public class HalfEdgeMesh
             }
         }
 
+        //On set nos quads
         newMesh.SetIndices(newQuads, MeshTopology.Quads, 0);
 
+        //Et on retourne le nouveau mesh
         newMesh.RecalculateBounds();
         newMesh.RecalculateNormals();
-
         return newMesh;
     }
 
+    ///<summary> Retourne une chaîne de caractères qui liste le nombre de vertices, d'edges et de faces </summary>
     public string GetInfos()
     {
-        return "Vertices : " + vertices.Count + ", Edges: " + edges.Count + ", Faces: " + faces.Count;
+        return "Vertices : " + vertices.Count + ", Edges: " + halfEdges.Count + ", Faces: " + faces.Count;
     }
+
+    #endregion  Function
 }

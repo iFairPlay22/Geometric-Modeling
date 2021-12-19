@@ -2,41 +2,42 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+///<summary> Gestionnaire d'affichage des formes géométriques et de leurs intersections dans la scène </summary>
 public class Geometry : MonoBehaviour
 {
     #region Attributes
 
     #region Segment attributes
 
-    // Vecteur des coefficients de rotation du segment
+    ///<summary> Vecteur des coefficients de rotation du segment </summary>
     private Vector3 kVect = new Vector3(1, 1, 1);
 
-    // Segment mathématique
+    ///<summary> Représentation mathématique du segment </summary>
     private Segment segment = new Segment(new Vector3(0, 0, 0), new Vector3(35, 0, 0));
 
     #endregion Segment attributes
 
     #region Plane attributes
 
-    // Plan a afficher
+    ///<summary> GameObject du plan </summary>
     [SerializeField]
     private GameObject planeObject;
 
-    // Plan mathématique
+    ///<summary> Représentation mathématique du plan </summary>
     private Plane plane = new Plane(new Vector3(10, 5, 10), 5);
 
     #endregion Plane attributes
 
     #region Sphere attributes
 
-    // Sphère mathématique
+    ///<summary> Représentation mathématique de la sphère </summary>
     private Sphere sphere = new Sphere(new Vector3(15, 0, 0), 1.5f);
 
     #endregion Sphere attributes
 
     #region Cylinder attributes
 
-    // Cylindre à afficher
+    ///<summary> GameObject du cylindre </summary>
     [SerializeField]
     private GameObject cylinderObject;
 
@@ -159,8 +160,8 @@ public class Geometry : MonoBehaviour
         #endregion Cylinder color printing
     }
 
-    // Fonction qui affiche le point d'intersection et le vecteur normal 
-    // d'intersection de la forme par rapport au segment
+
+    ///<summary> Affiche le point d'intersection et le vecteur normal d'intersection de la forme par rapport au segment </summary>
     private void DrawIntersectionInfos(Vector3 interP, Vector3 vectN)
     {
         Gizmos.color = Color.green;

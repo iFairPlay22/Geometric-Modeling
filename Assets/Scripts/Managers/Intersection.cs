@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+///<summary> Gestionnaire de calcul des intersections entre les formes </summary>
 public class Intersection
 {
+    ///<summary> Intersection segment-plan </summary>
     public static bool InterSegPlane(Segment segment, Plane plane, out Vector3 interP, out Vector3 vectN)
     {
         interP = new Vector3(); vectN = new Vector3();
@@ -45,6 +47,7 @@ public class Intersection
         }
     }
 
+    ///<summary> Intersection segment-sphère </summary>
     public static bool InterSegSphere(Segment segment, Sphere sphere, out Vector3 interP, out Vector3 vectN)
     {
         interP = new Vector3(); vectN = new Vector3();
@@ -96,6 +99,7 @@ public class Intersection
         return true;
     }
 
+    ///<summary> Intersection segment-cylindre </summary>
     public static bool InterSegCylinder(Segment segment, Cylinder cylinder, out Vector3 interP, out Vector3 vectN)
     {
         interP = new Vector3(); vectN = new Vector3(); 

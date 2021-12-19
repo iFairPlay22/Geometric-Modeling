@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+///<summary> Représentation mathématique d'une sphère </summary>
 public class Sphere
 {
+    #region Attributes
     private Vector3 p;
-
+    ///<summary> Centre de la sphère </summary>
     public Vector3 P
     {
         get { return p; }
@@ -13,12 +15,14 @@ public class Sphere
     }
 
     private float r;
-
+    ///<summary> Rayon de la sphère </summary>
     public float R
     {
         get { return r; }
         private set { r = value; }
     }
+
+    #endregion Attributes
 
     public Sphere(Vector3 p, float r)
     {

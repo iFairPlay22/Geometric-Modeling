@@ -2,25 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+///<summary> Représentation mathématique d'un plan </summary>
 public class Plane
 {
-    // Vecteur normal au plan
-    private Vector3 n;
+    #region Attributes
 
+    private Vector3 n;
+    ///<summary> Vecteur normal au plan </summary>
     public Vector3 N
     {
         get { return n; }
         private set { n = value; }
     }
 
-    // Distance signée
     private float d;
-
+    ///<summary> Distance signée </summary>
     public float D
     {
         get { return d; }
         private set { d = value; }
     }
+
+    #endregion Attributes
+
+    #region Constructors
 
     public Plane(Vector3 n, float d)
     {
@@ -39,4 +44,6 @@ public class Plane
         this.n = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
         this.d = Vector3.Dot(p1, n);
     }
+
+    #endregion Constructors
 }

@@ -3,44 +3,53 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+///<summary> Gestionnaire d'affichage et d'export des composants du mesh </summary>
 [RequireComponent(typeof(MeshFilter))]
 public class MeshDisplayInfo : MonoBehaviour
 {
+    ///<summary> MeshFilter de l'objet </summary>
     private MeshFilter m_Mf;
 
     [Header("Edges")]
+    ///<summary> Afficher ou non le debug des edges </summary>
     [SerializeField] private bool m_DisplayEdges;
-
+    ///<summary> Nombre maximum d'edges </summary>
     [SerializeField] private int m_NMaxEdges;
 
     [Header("Normals")]
+    ///<summary> Afficher ou non les normales </summary>
     [SerializeField] private bool m_DisplayNormals;
-
+    ///<summary> Nombre maximum de normales à afficher </summary>
     [SerializeField] private int m_NMaxNormals;
+    ///<summary> Facteur pour la taille des normales </summary>
     [SerializeField] private float m_NormalScaleFactor;
 
     [Header("Vertices")]
+    ///<summary> Afficher ou non le debug des vertices </summary>
     [SerializeField] private bool m_DisplayVertices;
-
+    ///<summary> Nombre maximum de vertices </summary>
     [SerializeField] private int m_NMaxVertices;
 
     [Header("Faces")]
+    ///<summary> Afficher ou non le debug des faces </summary>
     [SerializeField] private bool m_DisplayFaces;
-
+    ///<summary> Nombre maximum de faces </summary>
     [SerializeField] private int m_NMaxFaces;
 
     private void Awake()
     {
+        //Récupération du MeshFilter
         m_Mf = GetComponent<MeshFilter>();
     }
 
+    ///<summary> Affichage des informations du mesh </summary>
     private void OnDrawGizmos()
     {
         if (!(m_Mf && m_Mf.sharedMesh)) return;
 
         Vector3[] vertices = m_Mf.sharedMesh.vertices;
 
-        //EDGES
+        //Debug des edges et des faces
         if (m_DisplayEdges || m_DisplayFaces)
         {
             GUIStyle myStyle = null;
@@ -77,7 +86,7 @@ public class MeshDisplayInfo : MonoBehaviour
                 }
                 if (m_DisplayFaces && i < m_NMaxFaces)
                 {
-                    string str = $"{i}:{index1},{index2},{index3},{index4}"; // string.Format("{0}:{1},{2},{3},{4}",i,index1,index2,index3,index4);
+                    string str = $"{i}:{index1},{index2},{index3},{index4}";
                     Vector3 faceCenter = (pt1 + pt2 + pt3 + pt4) * .25f;
                     Gizmos.color = Color.blue;
                     Gizmos.DrawSphere(faceCenter, .01f);
@@ -86,7 +95,7 @@ public class MeshDisplayInfo : MonoBehaviour
             }
         }
 
-        //NORMALS
+        //Debug des normales
         if (m_DisplayNormals)
         {
             Vector3[] normals = m_Mf.sharedMesh.normals;
@@ -102,7 +111,7 @@ public class MeshDisplayInfo : MonoBehaviour
             }
         }
 
-        //VERTICES
+        //Debug des vertices
         if (m_DisplayVertices)
         {
             GUIStyle myStyle = new GUIStyle();
@@ -120,6 +129,7 @@ public class MeshDisplayInfo : MonoBehaviour
         }
     }
 
+    ///<summary> Export des informations du mesh au format CSV </summary>
     public static string ExportMeshCSV(Mesh mesh)
     {
         if (!mesh) return "";

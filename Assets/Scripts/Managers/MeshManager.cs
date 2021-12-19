@@ -4,26 +4,38 @@ using UnityEngine;
 
 namespace Assets.Scripts.CustumForm
 {
+    ///<summary> Enumération des noms de formes à subdiviser </summary>
     public enum FormEnum
     {
         Cube, StraightPrism
     }
 
+    ///<summary> Gestionnaire de création et de modification de meshs (meshes customs, subdivisions de meshes...) </summary>
     public class MeshManager : MonoBehaviour
     {
+        #region Attributes
+
         [SerializeField]
         private Material meshMaterial;
 
+        ///<summary> Forme à subdiviser </summary>
         [SerializeField]
         private FormEnum form;
 
+        ///<summary> Nombre de subdivisions consécutives à réaliser </summary>
         [SerializeField]
         private int subdisionNb = 2;
 
+        ///<summary> Liste d'HEMesh pour la subdivision</summary>
         private List<HalfEdgeMesh> halfEdgeMeshes = new List<HalfEdgeMesh>();
+
+        ///<summary> Liste des positions des meshes subdivisés créés </summary>
         private List<Vector3> offsets = new List<Vector3>();
 
+        ///<summary> Position calculée à partir de kx et kz </summary>
         private delegate Vector3 ComputePositionFromKxKz(float kx, float kz);
+
+        #endregion Attributes
 
         private void Start()
         {
@@ -31,28 +43,30 @@ namespace Assets.Scripts.CustumForm
             // m_Mf.sharedMesh = CreateQuad(new Vector3(4, 0, 2));
             // m_Mf.sharedMesh = CreateStrip(new Vector3(4, 0, 2), 8);
             // m_Mf.sharedMesh = CreatePlane(new Vector3(10, 0, 15), 3, 2);
-
             AddCatmullSubdivisions();
         }
 
+        #region Subdivision
+
+        ///<summary> Création des subdvisions consécutives </summary>
         private void AddCatmullSubdivisions()
         {
             Mesh baseMesh = form == FormEnum.Cube ? CreateCubeMesh() : CreateStraightPrismMesh();
-
             HalfEdgeMesh currentHalfEdgeMesh = null;
 
             for (int i = 0; i < Mathf.Abs(subdisionNb) + 1; i++)
             {
+                //Création de la forme initiale à la première itération, puis des meshes subdivisés pour les autres itérations 
                 if (i == 0)
                 {
                     currentHalfEdgeMesh = new HalfEdgeMesh(baseMesh);
                 }
                 else
                 {
-                    currentHalfEdgeMesh = CatmullClark.subdiviseMesh(currentHalfEdgeMesh);
+                    currentHalfEdgeMesh = CatmullClark.SubdiviseMesh(currentHalfEdgeMesh);
                 }
 
-                Mesh currentMesh = currentHalfEdgeMesh.toVertexFace();
+                Mesh currentMesh = currentHalfEdgeMesh.ToQuadsMesh();
                 Vector3 offset = new Vector3(i * 2 + 1 - subdisionNb * 2 - 5, 0, 0);
                 CreateGameObjectMesh("CatmullMesh " + i, currentMesh, offset);
                 
@@ -65,6 +79,7 @@ namespace Assets.Scripts.CustumForm
             }
         }
 
+        ///<summary> Création d'un objet correspondant à une étape de la subdivision </summary>
         private GameObject CreateGameObjectMesh(string title, Mesh mesh, Vector3 position)
         {
             GameObject go = new GameObject(title);
@@ -84,31 +99,40 @@ namespace Assets.Scripts.CustumForm
             return go;
         }
 
+        #region Affichage
+
+        ///<summary> Affichage des vertices et edges du mesh subdivisé </summary>
         private void OnDrawGizmos()
         {
             if (offsets != null && halfEdgeMeshes != null)
             {
                 for (int i = 0; i < halfEdgeMeshes.Count; i++)
                 {
-                    drawPoints(Color.green, halfEdgeMeshes[i].vertices, offsets[i]);
-                    drawLines(Color.black, halfEdgeMeshes[i].edges, offsets[i]);
+                    DrawPoints(Color.green, halfEdgeMeshes[i].vertices, offsets[i]);
+                    DrawLines(Color.black, halfEdgeMeshes[i].halfEdges, offsets[i]);
                 }  
             }
         }
 
-        private void drawPoints(Color c, List<Vector3> l, Vector3 v)
+        ///<summary> Affichage des vertices du mesh subdivisé </summary>
+        private void DrawPoints(Color color, List<Vector3> vertices, Vector3 position)
         {
-            Gizmos.color = c;
-            foreach (Vector3 pt in l)
-                Gizmos.DrawSphere(pt + v, 0.025f);
+            Gizmos.color = color;
+            foreach (Vector3 pt in vertices)
+                Gizmos.DrawSphere(pt + position, 0.025f);
         }
 
-        private void drawLines(Color c, List<HalfEdge> h, Vector3 v)
+        ///<summary> Affichage des edges du mesh subdivisé </summary>
+        private void DrawLines(Color color, List<HalfEdge> halfEdges, Vector3 position)
         {
-            Gizmos.color = c;
-            foreach (HalfEdge halfEdge in h)
-                Gizmos.DrawLine(halfEdge.sourceVertex + v, halfEdge.nextHalfEdge.sourceVertex + v);
+            Gizmos.color = color;
+            foreach (HalfEdge halfEdge in halfEdges)
+                Gizmos.DrawLine(halfEdge.sourceVertex + position, halfEdge.nextHalfEdge.sourceVertex + position);
         }
+
+        #endregion Affichage
+
+        #endregion Subdivision
 
         #region Formes de base
 
