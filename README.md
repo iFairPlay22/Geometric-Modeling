@@ -2,6 +2,8 @@
 
 ## Equipe
 
+Lors de notre 4ème d'études à l'école d'ingénieurs ESIEE Paris, nous avons réalisé un project de modélisation 3D. La composition de l'équipe est la suivante :
+
 > Ewen BOUQUET ;
 
 > Fabien COURTOIS ;
@@ -9,6 +11,7 @@
 > Victor HUGER ;
 
 ## Contenu du projet
+
 Notre projet comprend une unique scène, nommée "MainScene", qui contient l'ensemble des fonctionnalités développées. Les fonctionnalités sont les suivantes :
 - Calcul de la distance d’un point à une droite ;
 - Calcul de la distance d’un point à un plan ;
